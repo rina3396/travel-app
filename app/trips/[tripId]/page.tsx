@@ -1,6 +1,6 @@
 // app/trips/[tripId]/page.tsx
 import Link from "next/link"
-// import { createServer } from "@/lib/supabase/server"
+import { createServer } from "@/lib/supabase/server"
 
 
 export default async function TripDashboardPage({ params }: { params: { tripId: string } }) {

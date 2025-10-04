@@ -19,7 +19,7 @@ export default function TripNewPage() {
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="旅のタイトル"
+                    placeholder="旅のタイトルを入力してください"
                     className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
