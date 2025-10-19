@@ -1,9 +1,7 @@
-// app/api/trips/[tripId]/route.ts
-import { NextResponse } from "next/server"
-// import { prisma } from "@/lib/prisma"
+// app/trips/[tripId]/page.tsx
+import { createServer } from "@/lib/supabase/server"
 
-
-export async function GET(_: Request, { params }: { params: { tripId: string } }) {
-    // TODO: tripId で取得
-    return NextResponse.json({ tripId: params.tripId })
+export default async function TripDashboardPage({ params }: { params: { tripId: string } }) {
+    const supabase = await createServer() // ← await
+    // ...
 }
