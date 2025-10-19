@@ -1,9 +1,14 @@
-// types/trips.ts
+/** types/trips.ts */
 
-/** 
- * 1日のしおり（Day）を表す基本型
- * 各日には複数のアクティビティが紐づく想定
- */
+//S-10 旅基本情報
+export type Trip = {
+    id: string
+    title: string
+    startDate?: string
+    endDate?: string
+    members?: { id: string; name: string }[]
+}
+
 //trips\[tripId]\days\page.tsx
 //S-31 日別しおり
 export type Day = {
@@ -22,6 +27,7 @@ export type Day = {
 }
 
 //S-32 アクティビティ
+// types/trips.ts
 export type Activity = {
     id: string
     tripId: string
@@ -31,6 +37,7 @@ export type Activity = {
     location?: string
     note?: string
 }
+
 
 //S-40 予算
 export type Participant = {

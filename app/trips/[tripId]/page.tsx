@@ -1,12 +1,48 @@
 // app/trips/[tripId]/page.tsx
 import Link from "next/link"
 import { createServer } from "@/lib/supabase/server"
+import { Trip } from "@/types/trips"
+import { redirect } from "next/navigation"
 
 
 export default async function TripDashboardPage({ params }: { params: { tripId: string } }) {
     const { tripId } = params
-    // TODO: tripId で旅データ取得（タイトル、期間、メンバーなど）
 
+    // "new" が誤ってここに来た場合の保険
+    if (tripId === "new") {
+        redirect("/trips/new")
+    }
+    // TODO: tripId で旅データ取得（タイトル、期間、メンバーなど）
+    const supabase = createServer()
+    const { data: trip, error } = await supabase
+        .from("trips")
+        .select("id, title, start_date, end_date")
+        .eq("id", tripId)
+        .single()
+
+    if (error || !trip) {
+        return (
+            <section className="p-4 space-y-4">
+                <h1 className="text-xl font-bold text-red-600">旅が見つかりません</h1>
+                <p className="text-sm text-gray-600">tripId: {tripId}</p>
+                <p className="text-sm text-gray-500">{error?.message}</p>
+                <Link className="underline" href="/trips/new">
+                    新しい旅を作成する
+                </Link>
+            </section>
+        )
+    }
+    const title = trip.title || "タイトル未設定"
+    const start = trip.start_date ?? "未設定"
+    const end = trip.end_date ?? "未設定"
+
+    // --- 日本時間の今日の日付（YYYY-MM-DD） ---
+    const today = new Date().toLocaleDateString("ja-JP", {
+        timeZone: "Asia/Tokyo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+    }).replace(/\//g, "-")
 
     return (
         <section className="space-y-4">
