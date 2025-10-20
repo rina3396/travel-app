@@ -4,16 +4,12 @@ import { createServer } from "@/lib/supabase/server"
 import { Trip } from "@/types/trips"
 import { redirect } from "next/navigation"
 
-
 export default async function TripDashboardPage({ params }: { params: { tripId: string } }) {
     const { tripId } = params
 
-    // "new" が誤ってここに来た場合の保険
-    if (tripId === "new") {
-        redirect("/trips/new")
-    }
-    // TODO: tripId で旅データ取得（タイトル、期間、メンバーなど）
-    const supabase = createServer()
+    // ★ ここを await に
+    const supabase = await createServer()
+
     const { data: trip, error } = await supabase
         .from("trips")
         .select("id, title, start_date, end_date")
@@ -26,12 +22,11 @@ export default async function TripDashboardPage({ params }: { params: { tripId: 
                 <h1 className="text-xl font-bold text-red-600">旅が見つかりません</h1>
                 <p className="text-sm text-gray-600">tripId: {tripId}</p>
                 <p className="text-sm text-gray-500">{error?.message}</p>
-                <Link className="underline" href="/trips/new">
-                    新しい旅を作成する
-                </Link>
+                <Link className="underline" href="/trips/new">新しい旅を作成する</Link>
             </section>
-        )
+        )   
     }
+
     const title = trip.title || "タイトル未設定"
     const start = trip.start_date ?? "未設定"
     const end = trip.end_date ?? "未設定"

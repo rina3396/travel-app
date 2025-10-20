@@ -15,15 +15,13 @@ export default function LoginPage() {
         // TODO: Supabase でメールログイン or OAuth
         // supabaseの機能を使用して、メールでログインする
         // client.tsでsupabaseのURLを呼び出し
-        const { error } = await supabase.auth.signInWithOtp({ email })
-
-        //ログインエラー時の処理
-        if (error) {
-            alert("ログインエラー: " + error.message)
-        } else {
-            alert("確認用のメールを送信。")
-        }
-        // await supabase.auth.signInWithOtp({ email })
+        const { error } = await supabase.auth.signInWithOtp({
+            email,
+            options: {
+                emailRedirectTo: `${window.location.origin}/auth/callback`, // ← 必須
+                // shouldCreateUser: true, // 既存ユーザー限定にしたいなら false
+            },
+        })
     }
 
 
@@ -34,7 +32,6 @@ export default function LoginPage() {
                 <input className="w-full rounded border p-2" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
                 <button className="rounded bg-black px-4 py-2 text-white">ログイン</button>
             </form>
-            {/* TODO: OAuth ボタン（Google/GitHub など） */}
         </div>
     )
 }
