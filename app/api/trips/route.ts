@@ -1,39 +1,49 @@
 // app/api/trips/route.ts
-import { NextRequest, NextResponse } from "next/server"
+import { cookies } from "next/headers"
+import { NextResponse } from "next/server"
 import { createServerClient } from "@supabase/ssr"
 
-export async function POST(req: NextRequest) {
-    // Cookie書き込み可能なレスポンス（必要時）
-    const res = NextResponse.next()
+export async function POST(req: Request) {
+    // ✅ Next.js v15 では await が必須
+    const cookieStore = await cookies()
 
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
             cookies: {
-                get: (name) => req.cookies.get(name)?.value,
-                set: (name, value, options) => res.cookies.set({ name, value, ...options }),
-                remove: (name, options) => res.cookies.set({ name, value: "", ...options }),
+                getAll: () => cookieStore.getAll(),
+                setAll: (cookiesToSet) => {
+                    cookiesToSet.forEach(({ name, value, options }) =>
+                        // name, value, options の3引数でOK（Object渡しでも可）
+                        cookieStore.set(name, value, options)
+                    )
+                },
             },
         }
     )
 
+    // 認証チェック（ここで 401 になるならクッキーが読めてない）
     const { data: { user }, error: userErr } = await supabase.auth.getUser()
-    if (!user || userErr) {
-        return NextResponse.json({ error: "ログインが必要です" }, { status: 401 })
+    if (userErr || !user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { title } = await req.json()
+    const { title, start_date, end_date } = await req.json()
+
     const { data, error } = await supabase
         .from("trips")
-        .insert([{ title, user_id: user.id }]) // ← RLS用に user_id を必ず入れる
+        .insert({
+            title,
+            start_date,
+            end_date,
+            owner_id: user.id, // RLS 前提
+        })
         .select("id")
         .single()
 
     if (error) {
         return NextResponse.json({ error: error.message }, { status: 400 })
     }
-
-    // res.headers を引き継ぐ（Cookie更新があれば維持）
-    return NextResponse.json({ id: data.id }, { headers: res.headers })
+    return NextResponse.json({ id: data.id }, { status: 201 })
 }

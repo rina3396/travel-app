@@ -19,25 +19,20 @@ export default function TripNewPage() {
             const res = await fetch("/api/trips", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                credentials: "include",
                 body: JSON.stringify({ title }),
             })
 
-            // ✅ サーバーが成功なら、そのIDで遷移
             if (res.ok) {
                 const { id } = await res.json()
                 router.push(`/trips/${encodeURIComponent(id)}`)
                 return
             }
 
-            // ✅ 401 などAPI失敗時：ローカル“仮トリップ”で即遷移（未ログインでも進める）
-            const tempId = makeTempTripId()
-            saveLocalTrip(tempId, { id: tempId, title, createdAt: new Date().toISOString() })
-            router.push(`/trips/${encodeURIComponent(tempId)}?guest=1`)
-        } catch (err: any) {
-            // ✅ 通信例外でも同様にフォールバック
-            const tempId = makeTempTripId()
-            saveLocalTrip(tempId, { id: tempId, title, createdAt: new Date().toISOString() })
-            router.push(`/trips/${encodeURIComponent(tempId)}?guest=1`)
+            const { error } = await res.json().catch(() => ({ error: "作成に失敗しました" }))
+            setError(error ?? "作成に失敗しました")
+        } catch {
+            setError("ネットワークエラーが発生しました。時間をおいて再度お試しください。")
         } finally {
             setLoading(false)
         }
@@ -66,20 +61,4 @@ export default function TripNewPage() {
             </form>
         </section>
     )
-}
-
-function makeTempTripId() {
-    // 例: guest-maz3k-3b0b1b2e-...
-    return `guest-${Date.now().toString(36)}-${crypto.randomUUID()}`
-}
-
-function saveLocalTrip(id: string, data: any) {
-    try {
-        const key = `trip:local:${id}`
-        localStorage.setItem(key, JSON.stringify(data))
-        // ついでに最近作成したリストも持っておく（任意）
-        const listKey = "trip:local:index"
-        const list = JSON.parse(localStorage.getItem(listKey) || "[]")
-        localStorage.setItem(listKey, JSON.stringify([id, ...list.filter((x: string) => x !== id)]))
-    } catch { }
 }
