@@ -1,10 +1,10 @@
-// app/auth/callback/route.ts
-import { NextResponse } from "next/server"
-import { createServerClient } from "@supabase/ssr"
+// app/auth/refresh/route.ts
 import { cookies, headers } from "next/headers"
+import { createServerClient } from "@supabase/ssr"
 
-export async function GET(req: Request) {
+export async function POST() {
     const cookieStore = await cookies()
+    const authHeader = (await headers()).get("Authorization") ?? undefined
 
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,14 +18,11 @@ export async function GET(req: Request) {
                     })
                 },
             },
-            //（なくても動きますが）一応 Authorization を委譲
-            global: { headers: { Authorization: (await headers()).get("Authorization") ?? "" } },
+            ...(authHeader ? { global: { headers: { Authorization: authHeader } } } : {}),
         }
     )
 
-    // ここで ?code=… をサーバークッキーのセッションに交換
-    await supabase.auth.exchangeCodeForSession()
-
-    // 好きな遷移先へ
-    return NextResponse.redirect(new URL("/trips/new", req.url))
+    // これにより最新トークンでサーバークッキーを同期
+    await supabase.auth.getUser()
+    return new Response(null, { status: 204 })
 }

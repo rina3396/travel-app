@@ -1,8 +1,9 @@
 // app/trips/new/page.tsx
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import { createBrowserClient } from "@supabase/ssr"
 
 export default function TripNewPage() {
     const router = useRouter()
@@ -10,29 +11,57 @@ export default function TripNewPage() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
+    // ★ ブラウザ用 Supabase クライアント
+    const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+
+    // ★ マウント時にセッション確認（未ログインは /auth/login に誘導）
+    useEffect(() => {
+        (async () => {
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session) router.replace("/auth/login")
+        })()
+        const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (!session) router.replace("/auth/login")
+        })
+        return () => sub.subscription.unsubscribe()
+    }, []) // eslint-disable-line
+
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError(null)
         setLoading(true)
 
+        // ★ 現在のアクセストークンを取得し、API に Bearer で付与
+        const { data: { session } } = await supabase.auth.getSession()
+        const token = session?.access_token
+        if (!token) {
+            setLoading(false)
+            setError("未ログインです。先にログインしてください。")
+            return
+        }
+
         try {
             const res = await fetch("/api/trips", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`, // ★ 重要
+                },
                 body: JSON.stringify({ title }),
             })
 
             if (res.ok) {
                 const { id } = await res.json()
                 router.push(`/trips/${encodeURIComponent(id)}`)
-                return
+            } else {
+                const { error } = await res.json().catch(() => ({ error: "作成に失敗しました" }))
+                setError(error ?? `HTTP ${res.status}`)
             }
-
-            const { error } = await res.json().catch(() => ({ error: "作成に失敗しました" }))
-            setError(error ?? "作成に失敗しました")
         } catch {
-            setError("ネットワークエラーが発生しました。時間をおいて再度お試しください。")
+            setError("ネットワークエラーが発生しました。")
         } finally {
             setLoading(false)
         }

@@ -40,24 +40,34 @@
 //     )
 // }
 'use client'
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+// lib/supabase/client.ts
+import { createBrowserClient } from "@supabase/ssr"
 
 export function createClientBrowser() {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
-
-    if (!url || !key) {
-        throw new Error('Missing Supabase env: NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY')
-    }
-    if (url.endsWith('/')) {
-        throw new Error('Supabase URL must not end with a trailing slash')
-    }
-
-    return createSupabaseClient(url, key, {
-        auth: {
-            persistSession: true,
-            autoRefreshToken: true,
-            detectSessionInUrl: true,
-        },
-    })
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!url || !anon) throw new Error("Supabase env missing")
+    return createBrowserClient(url, anon)
 }
+
+// import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+
+// export function createClientBrowser() {
+//     const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
+//     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
+
+//     if (!url || !key) {
+//         throw new Error('Missing Supabase env: NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY')
+//     }
+//     if (url.endsWith('/')) {
+//         throw new Error('Supabase URL must not end with a trailing slash')
+//     }
+
+//     return createSupabaseClient(url, key, {
+//         auth: {
+//             persistSession: true,
+//             autoRefreshToken: true,
+//             detectSessionInUrl: true,
+//         },
+//     })
+// }
