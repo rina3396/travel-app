@@ -1,16 +1,19 @@
-"use client"
+﻿"use client"
 
 import { FormEvent, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClientBrowser } from "@/lib/supabase/client"
+
+const SAMPLE_EMAIL = process.env.NEXT_PUBLIC_SAMPLE_EMAIL || ""
+const SAMPLE_PASSWORD = process.env.NEXT_PUBLIC_SAMPLE_PASSWORD || ""
 
 export default function LoginPage() {
     const router = useRouter()
     const supabase = useMemo(() => createClientBrowser(), [])
 
     const [email, setEmail] = useState("")
+    const [password, setPassword] = useState("")
     const [loading, setLoading] = useState(false)
-    const [message, setMessage] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
@@ -28,38 +31,71 @@ export default function LoginPage() {
         }
     }, [router, supabase])
 
-    const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault()
-        if (!email) {
-            setError("メールアドレスを入力してください。")
+    const loginWithEmailPassword = async (e?: FormEvent) => {
+        if (e) e.preventDefault()
+        const normalizedEmail = email.trim().toLowerCase()
+        if (!normalizedEmail || !password) {
+            setError("メールアドレスとパスワードを入力してください。")
             return
         }
-
         setLoading(true)
         setError(null)
-        setMessage(null)
-
-        const redirectTo = `${window.location.origin}/auth/callback`
-        const { error } = await supabase.auth.signInWithOtp({
-            email,
-            options: { emailRedirectTo: redirectTo },
-        })
-
+        const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password })
         setLoading(false)
-
         if (error) {
-            setError(error.message)
+            if (error.message === "Invalid login credentials") {
+                setError("メールアドレスまたはパスワードが正しくありません。")
+            } else {
+                setError(`ログインに失敗しました: ${error.message}`)
+            }
             return
         }
+        router.replace("/trips/new")
+    }
 
-        setMessage("入力いただいたメールアドレス宛にログイン用リンクを送信しました。メールボックスをご確認ください。")
+    const handleSampleLogin = async () => {
+        if (!SAMPLE_EMAIL || !SAMPLE_PASSWORD) {
+            setError("サンプル用のメールアドレスとパスワードが設定されていません。NEXT_PUBLIC_SAMPLE_EMAIL / NEXT_PUBLIC_SAMPLE_PASSWORD を設定してください。")
+            return
+        }
+        const normalizedEmail = SAMPLE_EMAIL.trim().toLowerCase()
+        try {
+            setEmail(normalizedEmail)
+            setPassword(SAMPLE_PASSWORD)
+            setLoading(true)
+            setError(null)
+            // 先にサンプルユーザーを作成/更新
+            const resp = await fetch("/api/sample-user", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ email: normalizedEmail, password: SAMPLE_PASSWORD }),
+            })
+            if (!resp.ok) {
+                const data = await resp.json().catch(() => ({}))
+                throw new Error(data?.error || "サンプルユーザーの準備に失敗しました。")
+            }
+            // 作成/更新後にログイン
+            const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password: SAMPLE_PASSWORD })
+            if (error) {
+                if (error.message === "Invalid login credentials") {
+                    throw new Error("サンプルのメールアドレスまたはパスワードが正しくありません。")
+                }
+                throw new Error(`サンプルでのログインに失敗しました: ${error.message}`)
+            }
+        } catch (e: any) {
+            setError(e?.message ?? "サンプルでのログインに失敗しました。")
+            setLoading(false)
+            return
+        }
+        setLoading(false)
+        router.replace("/trips/new")
     }
 
     return (
         <section className="mx-auto max-w-sm space-y-4 p-4 text-sm">
             <h1 className="text-lg font-semibold">ログイン</h1>
-            <p>メールアドレス宛に送信されるマジックリンクでログインします。</p>
-            <form onSubmit={handleLogin} className="space-y-3">
+            <p>メールアドレスとパスワードでログインします。</p>
+            <form onSubmit={loginWithEmailPassword} className="space-y-3">
                 <label className="flex flex-col gap-2 text-sm">
                     <span className="font-medium">メールアドレス</span>
                     <input
@@ -72,15 +108,37 @@ export default function LoginPage() {
                         required
                     />
                 </label>
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full rounded bg-blue-600 py-2 text-white disabled:opacity-50"
-                >
-                    {loading ? "送信中…" : "ログインリンクを送る"}
-                </button>
+                <label className="flex flex-col gap-2 text-sm">
+                    <span className="font-medium">パスワード</span>
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        className="w-full rounded border px-3 py-2"
+                        placeholder="••••••••"
+                        autoComplete="current-password"
+                        required
+                    />
+                </label>
+                <div className="flex flex-col gap-2">
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full rounded bg-blue-600 py-2 text-white disabled:opacity-50"
+                    >
+                        {loading ? "処理中…" : "ログイン"}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleSampleLogin}
+                        disabled={loading}
+                        className="w-full rounded border py-2 disabled:opacity-50"
+                        title="公開環境では値を埋め込まないでください"
+                    >
+                        サンプルでログイン
+                    </button>
+                </div>
             </form>
-            {message && <p className="text-green-700">{message}</p>}
             {error && <p className="text-red-600">{error}</p>}
         </section>
     )

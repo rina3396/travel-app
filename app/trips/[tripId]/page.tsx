@@ -1,14 +1,12 @@
-// app/trips/[tripId]/page.tsx
+﻿// app/trips/[tripId]/page.tsx
 import Link from "next/link"
 import { createServer } from "@/lib/supabase/server"
-import { Trip } from "@/types/trips"
-import { redirect } from "next/navigation"
 
 export default async function TripDashboardPage({ params }: { params: { tripId: string } }) {
     const { tripId } = params
 
-    // ★ ここを await に
-    const supabase = await createServer()
+    // SSR 用の Supabase クライアントを取得
+    const { supabase } = await createServer()
 
     const { data: trip, error } = await supabase
         .from("trips")
@@ -24,25 +22,18 @@ export default async function TripDashboardPage({ params }: { params: { tripId: 
                 <p className="text-sm text-gray-500">{error?.message}</p>
                 <Link className="underline" href="/trips/new">新しい旅を作成する</Link>
             </section>
-        )   
+        )
     }
 
     const title = trip.title || "タイトル未設定"
     const start = trip.start_date ?? "未設定"
     const end = trip.end_date ?? "未設定"
 
-    // --- 日本時間の今日の日付（YYYY-MM-DD） ---
-    const today = new Date().toLocaleDateString("ja-JP", {
-        timeZone: "Asia/Tokyo",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-    }).replace(/\//g, "-")
-
     return (
-        <section className="space-y-4">
+        <section className="space-y-4 p-4">
             <h1 className="text-xl font-bold">旅ダッシュボード</h1>
             <p className="text-sm text-gray-600">tripId: {tripId}</p>
+            <p className="text-sm">タイトル: {title}／期間: {start} 〜 {end}</p>
             <ul className="list-disc pl-5 space-y-1">
                 <li><Link className="underline" href={`/trips/${tripId}/preview`}>完成プレビュー</Link></li>
                 <li><Link className="underline" href={`/trips/${tripId}/days/${new Date().toISOString().slice(0, 10)}`}>日別しおり編集</Link></li>

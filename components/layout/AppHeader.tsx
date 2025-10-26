@@ -1,12 +1,21 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { useMemo } from 'react'
+import { createClientBrowser } from '@/lib/supabase/client'
 
 export default function AppHeader() {
     const pathname = usePathname()
+    const router = useRouter()
+    const supabase = useMemo(() => createClientBrowser(), [])
 
     if (pathname?.startsWith('/auth')) return null
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut()
+        router.replace('/auth/login')
+    }
 
     return (
         <header className="w-full border-b">
@@ -20,8 +29,15 @@ export default function AppHeader() {
                         新規作成
                     </Link>
                     <Link className="underline" href="/trips">
-                        旅程一覧
+                        旅の一覧
                     </Link>
+                    <button
+                        onClick={handleLogout}
+                        className="rounded border px-3 py-1"
+                        title="サインアウトしてログイン画面に戻ります"
+                    >
+                        ログオフ
+                    </button>
                 </nav>
             </div>
         </header>

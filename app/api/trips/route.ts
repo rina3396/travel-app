@@ -11,17 +11,15 @@ type TripPayload = {
 }
 
 export async function POST(req: Request) {
-    // createServer は async 版を使っている前提（未対応なら下のコメント参照）
     const { supabase, applyPendingCookies } = await createServer()
 
-    // Authorization を取得
+    // Authorization 取得（SSR のグローバルヘッダと Bearer の両方を考慮）
     const authHeader = req.headers.get("authorization") ?? ""
     const token = authHeader.replace(/^Bearer\s+/i, "") || undefined
 
-    // ① 通常ルート（global ヘッダでクライアントが認識できる）
+    // まずは通常の getUser（SSR のヘッダ連携）
     let { data: { user }, error: userErr } = await supabase.auth.getUser()
-
-    // ② フォールバック（明示トークン引数で照会）
+    // ダメなら Bearer トークンで再取得
     if ((!user || userErr) && token) {
         const r = await supabase.auth.getUser(token)
         user = r.data.user
@@ -46,7 +44,8 @@ export async function POST(req: Request) {
     const endDate = body.end_date ?? body.endDate ?? null
 
     const basePayload = { title, start_date: startDate, end_date: endDate }
-    const columnFallbackOrder = ["owner_id", "user_id"] as const
+    // DB の型定義では trips.user_id が存在するため、まず user_id を試し、無ければ owner_id を試す
+    const columnFallbackOrder = ["user_id", "owner_id"] as const
 
     for (const columnName of columnFallbackOrder) {
         const { data, error } = await supabase
@@ -61,25 +60,30 @@ export async function POST(req: Request) {
             return res
         }
 
-        const isMissingColumn =
-            !!error?.message &&
-            (error.message.includes(`column "${columnName}" does not exist`) ||
-                error.message.includes(`column "${columnName}" of relation "trips" does not exist`))
+        const raw = error?.message ?? ""
+        const isMissingColumn = !!raw && (
+            raw.includes(`column \"${columnName}\" does not exist`) ||
+            raw.includes(`column \"${columnName}\" of relation \"trips\" does not exist`) ||
+            raw.includes(`Could not find the '${columnName}' column of 'trips' in the schema cache`) ||
+            (raw.toLowerCase().includes("schema cache") && raw.includes(columnName))
+        )
 
         if (!isMissingColumn) {
-            const msg = error?.message?.includes("row-level security")
+            const friendly = raw.includes("row-level security")
                 ? "RLS のポリシーにより操作が拒否されました。Supabase の設定を確認してください。"
-                : error?.message ?? "Unknown error"
-            const res = NextResponse.json({ error: msg }, { status: 400 })
+                : raw || "Unknown error"
+            const res = NextResponse.json({ error: friendly }, { status: 400 })
             applyPendingCookies?.(res)
             return res
         }
+        // 別のカラムへフォールバック継続
     }
 
     const res = NextResponse.json(
-        { error: "trips テーブルに所有者カラム(owner_id / user_id)が存在しません" },
+        { error: "trips テーブルに所有者カラム（owner_id / user_id）が存在しません" },
         { status: 400 }
     )
     applyPendingCookies?.(res)
     return res
 }
+
