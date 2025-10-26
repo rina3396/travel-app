@@ -13,6 +13,8 @@ export default function AppHeader() {
     if (pathname?.startsWith('/auth')) return null
 
     const handleLogout = async () => {
+        const ok = typeof window !== 'undefined' ? window.confirm('ログオフしてもよろしいですか？') : true
+        if (!ok) return
         await supabase.auth.signOut()
         router.replace('/auth/login')
     }
@@ -20,17 +22,11 @@ export default function AppHeader() {
     return (
         <header className="w-full border-b">
             <div className="mx-auto flex max-w-screen-lg items-center justify-between px-4 py-3">
-                <Link href="/" className="font-bold">
-                    りょこうアプリ
-                </Link>
+                <Link href="/" className="font-bold">りょこうアプリ</Link>
 
                 <nav className="flex items-center gap-3 text-sm">
-                    <Link className="underline" href="/trips/new">
-                        新規作成
-                    </Link>
-                    <Link className="underline" href="/trips">
-                        旅の一覧
-                    </Link>
+                    <Link className="underline" href="/trips/new">新規作成</Link>
+                    <Link className="underline" href="/trips">旅の一覧</Link>
                     <button
                         onClick={handleLogout}
                         className="rounded border px-3 py-1"
