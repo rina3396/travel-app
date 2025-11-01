@@ -26,6 +26,6 @@ export async function GET(req: Request) {
     // ここで ?code=… をサーバークッキーのセッションに交換
     await supabase.auth.exchangeCodeForSession()
 
-    // 好きな遷移先へ
-    return NextResponse.redirect(new URL("/trips/new", req.url))
+    // ログイン後は一覧へ
+    return NextResponse.redirect(new URL("/trips", req.url))
 }

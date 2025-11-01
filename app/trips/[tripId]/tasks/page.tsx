@@ -121,9 +121,9 @@ export default function TripTasksPage({ params }: { params: Promise<{ tripId: st
       <form onSubmit={addTask} className="rounded-2xl border bg-white p-3 grid gap-3">
         <div className="grid grid-cols-3 gap-2">
           <div className="col-span-2 space-y-1">
-            <label className="text-xs text-gray-600">タイトル（必須）</label>
+            <label className="text-xs text-gray-600">タイトル�E�忁E��！E/label>
             <input value={title} onChange={(e) => setTitle(e.target.value)} required
-              placeholder="例）旅程の印刷、日焼け止め" className="w-full rounded-xl border px-3 py-2 text-sm" />
+              placeholder="例）旅程�E印刷、日焼け止めE className="w-full rounded-xl border px-3 py-2 text-sm" />
           </div>
           <div className="space-y-1">
             <label className="text-xs text-gray-600">種別</label>
@@ -135,7 +135,7 @@ export default function TripTasksPage({ params }: { params: Promise<{ tripId: st
           </div>
         </div>
         <div className="flex justify-end">
-          <button type="submit" className="rounded-2xl border px-3 py-2 text-sm shadow-sm hover:bg-gray-50">追加</button>
+          <button type="submit" className="rounded-2xl bg-orange-500 px-3 py-2 text-sm text-white shadow-sm hover:bg-orange-600">追加</button>
         </div>
       </form>
 
@@ -143,7 +143,7 @@ export default function TripTasksPage({ params }: { params: Promise<{ tripId: st
       <div className="flex gap-2">
         {(["all", "todo", "packing"] as const).map((f) => (
           <button key={f} onClick={() => setFilter(f)}
-            className={`rounded-2xl border px-3 py-1.5 text-xs ${filter === f ? "bg-gray-50 shadow-inner" : "hover:bg-gray-50"}`}>
+            className={`rounded-2xl border px-3 py-1.5 text-xs ${filter === f ? "bg-orange-50 border-orange-500 text-orange-700" : "hover:bg-orange-50"}`}>
             {f === "all" ? "すべて" : f === "todo" ? "TODO" : "持ち物"}
           </button>
         ))}
@@ -152,12 +152,12 @@ export default function TripTasksPage({ params }: { params: Promise<{ tripId: st
       {/* 一覧 */}
       <ul className="rounded-2xl border divide-y bg-white">
         {filtered.length === 0 ? (
-          <li className="p-4 text-sm text-gray-500">まだ項目がありません。上のフォームから追加してください。</li>
+          <li className="p-4 text-sm text-gray-500">まだ頁E��がありません。上�Eフォームから追加してください、E/li>
         ) : (
           filtered.map((t) => (
             <li key={t.id} className="p-3 flex items-center gap-3">
               <input type="checkbox" checked={t.done} onChange={() => toggle(t.id)}
-                className="h-4 w-4" aria-label="完了" />
+                className="h-4 w-4" aria-label="完亁E />
               <div className="flex-1 min-w-0">
                 <div className={`truncate ${t.done ? "line-through text-gray-400" : ""}`}>{t.title}</div>
                 <div className="text-xs text-gray-500">{t.kind === "todo" ? "TODO" : "持ち物"}</div>
@@ -173,4 +173,5 @@ export default function TripTasksPage({ params }: { params: Promise<{ tripId: st
     </section>
   )
 }
+
 

@@ -17,8 +17,7 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
   const [link, setLink] = useState<ShareLink | null>(null)
   const [copyOk, setCopyOk] = useState<string | null>(null)
 
-  // 追加フォーム（メール入力→UUID解決→登録）
-  const [newEmail, setNewEmail] = useState("")
+  // 追加フォーム�E�メール入力�EUUID解決→登録�E�E  const [newEmail, setNewEmail] = useState("")
   const [newRole, setNewRole] = useState<"viewer" | "editor">("viewer")
 
   useEffect(() => {
@@ -58,10 +57,10 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
     if (!publicUrl) return
     try {
       await navigator.clipboard.writeText(publicUrl)
-      setCopyOk("リンクをコピーしました")
+      setCopyOk("リンクをコピ�Eしました")
       setTimeout(() => setCopyOk(null), 1500)
     } catch {
-      setCopyOk("コピーに失敗しました")
+      setCopyOk("コピ�Eに失敗しました")
       setTimeout(() => setCopyOk(null), 1500)
     }
   }
@@ -75,11 +74,10 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
     setError(null)
     try {
       setLoading(true)
-      // email から UUID を解決（サーバー側: service role 使用）
-      const lu = await fetch('/api/admin/users/lookup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) })
+      // email から UUID を解決�E�サーバ�E側: service role 使用�E�E      const lu = await fetch('/api/admin/users/lookup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) })
       if (!lu.ok) throw new Error(await lu.text())
       const { id } = await lu.json()
-      if (members.some(m => m.user_id === id)) { setError("既に登録されています"); return }
+      if (members.some(m => m.user_id === id)) { setError("既に登録されてぁE��ぁE); return }
       const { error: insErr } = await supabase.from("trip_members").insert({ trip_id: tripId, user_id: id, role: newRole })
       if (insErr) throw new Error(insErr.message)
       const { data: mData, error: mErr } = await supabase.from("trip_members").select("user_id, role").eq("trip_id", tripId)
@@ -119,7 +117,7 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
   return (
     <section className="mx-auto w-full max-w-2xl space-y-5 p-4">
       <header className="space-y-1">
-        <h1 className="text-xl font-bold">共有・メンバー管理</h1>
+        <h1 className="text-xl font-bold">共有�Eメンバ�E管琁E/h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
       </header>
 
@@ -129,39 +127,39 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
         {publicUrl ? (
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <code className="flex-1 truncate rounded border bg-gray-50 px-2 py-1 text-xs">{publicUrl}</code>
-            <button onClick={copyShareUrl} className="rounded border px-3 py-1 text-sm hover:bg-gray-50">コピー</button>
+            <button onClick={copyShareUrl} className="rounded border border-orange-500 px-3 py-1 text-sm text-orange-700 hover:bg-orange-50">コピ�E</button>
           </div>
         ) : (
-          <p className="text-sm text-gray-600">有効な共有リンクはありません。</p>
+          <p className="text-sm text-gray-600">有効な共有リンクはありません、E/p>
         )}
         {copyOk && <p className="mt-2 text-xs text-green-600">{copyOk}</p>}
-        <p className="mt-2 text-xs text-gray-500">公開ページ: /share/[shareId]</p>
+        <p className="mt-2 text-xs text-gray-500">公開�Eージ: /share/[shareId]</p>
       </div>
 
-      {/* メンバーの追加 */}
+      {/* メンバ�Eの追加 */}
       <form onSubmit={addMember} className="rounded-2xl border bg-white p-4 grid gap-3">
-        <div className="text-sm font-medium">メンバーの追加</div>
+        <div className="text-sm font-medium">メンバ�Eの追加</div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="user@example.com" className="w-full rounded-xl border px-3 py-2 text-sm" required />
           <select value={newRole} onChange={(e) => setNewRole(e.target.value as any)} className="rounded-xl border px-3 py-2 text-sm bg-white">
-            <option value="viewer">viewer（閲覧）</option>
-            <option value="editor">editor（編集）</option>
+            <option value="viewer">viewer�E�閲覧�E�E/option>
+            <option value="editor">editor�E�編雁E��E/option>
           </select>
           <div className="flex justify-end">
-            <button type="submit" disabled={loading} className="rounded-xl border px-3 py-2 text-sm shadow-sm hover:bg-gray-50 disabled:opacity-60">追加</button>
+            <button type="submit" disabled={loading} className="rounded-xl bg-orange-500 px-3 py-2 text-sm text-white shadow-sm hover:bg-orange-600 disabled:opacity-60">追加</button>
           </div>
         </div>
       </form>
 
-      {/* メンバー一覧と変更 */}
+      {/* メンバ�E一覧と変更 */}
       <div className="rounded-2xl border bg-white">
-        <div className="border-b p-3 text-sm font-medium">メンバー</div>
+        <div className="border-b p-3 text-sm font-medium">メンバ�E</div>
         {loading ? (
           <div className="p-4 text-sm text-gray-500">読み込み中…</div>
         ) : error ? (
           <div className="p-4 text-sm text-red-600">{error}</div>
         ) : members.length === 0 ? (
-          <div className="p-4 text-sm text-gray-500">メンバーが登録されていません。</div>
+          <div className="p-4 text-sm text-gray-500">メンバ�Eが登録されてぁE��せん、E/div>
         ) : (
           <ul className="divide-y">
             {members.map((m) => (
@@ -186,4 +184,5 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
     </section>
   )
 }
+
 

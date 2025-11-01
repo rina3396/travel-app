@@ -29,7 +29,7 @@ export default function TripDaysSelectorPage({ params }: { params: Promise<{ tri
         const data: TripDetail = await res.json()
         if (!abort) setTrip(data)
       } catch (e: any) {
-        if (!abort) setError(e?.message ?? "旅行情報の取得に失敗しました")
+        if (!abort) setError(e?.message ?? "旁E��情報の取得に失敗しました")
       } finally {
         if (!abort) setLoading(false)
       }
@@ -38,11 +38,9 @@ export default function TripDaysSelectorPage({ params }: { params: Promise<{ tri
   }, [tripId])
 
   const days = useMemo(() => {
-    // 旅行期間から日付配列を生成（未設定時は本日1日のみ）
-    const start = trip?.start_date ? new Date(trip.start_date) : new Date()
+    // 旁E��期間から日付�E列を生�E�E�未設定時は本日1日のみ�E�E    const start = trip?.start_date ? new Date(trip.start_date) : new Date()
     const end = trip?.end_date ? new Date(trip.end_date) : start
-    // 正規化（時刻をUTC基準の00:00に近づける）
-    const s = new Date(Date.UTC(start.getFullYear(), start.getMonth(), start.getDate()))
+    // 正規化�E�時刻をUTC基準�E00:00に近づける�E�E    const s = new Date(Date.UTC(start.getFullYear(), start.getMonth(), start.getDate()))
     const e = new Date(Date.UTC(end.getFullYear(), end.getMonth(), end.getDate()))
     if (e < s) return [formatISODate(s)]
     const arr: string[] = []
@@ -53,14 +51,13 @@ export default function TripDaysSelectorPage({ params }: { params: Promise<{ tri
   }, [trip?.start_date, trip?.end_date])
 
   function onSelect(date: string) {
-    // アクティビティ画面へ（対象日付付き）
-    router.push(`/trips/${encodeURIComponent(tripId)}/activities?date=${encodeURIComponent(date)}`)
+    // アクチE��ビティ画面へ�E�対象日付付き�E�E    router.push(`/trips/${encodeURIComponent(tripId)}/activities?date=${encodeURIComponent(date)}`)
   }
 
   return (
     <section className="mx-auto w-full max-w-2xl p-4 space-y-4">
       <header className="space-y-1">
-        <h1 className="text-xl font-bold">日別しおりの編集日を選択</h1>
+        <h1 className="text-xl font-bold">日別しおり�E編雁E��を選抁E/h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
       </header>
 
@@ -72,7 +69,7 @@ export default function TripDaysSelectorPage({ params }: { params: Promise<{ tri
           {days.map((d, i) => (
             <button
               key={d}
-              className="rounded-xl border px-3 py-2 text-sm text-left hover:bg-gray-50"
+              className="rounded-xl border px-3 py-2 text-sm text-left hover:bg-orange-50"
               onClick={() => onSelect(d)}
             >
               <div className="font-medium">{i + 1}日目</div>
@@ -83,8 +80,7 @@ export default function TripDaysSelectorPage({ params }: { params: Promise<{ tri
       )}
 
       <p className="text-xs text-gray-600">
-        選択した日付の詳細編集はアクティビティ画面で行います。
-      </p>
+        選択した日付�E詳細編雁E�EアクチE��ビティ画面で行います、E      </p>
     </section>
   )
 }
@@ -92,4 +88,5 @@ export default function TripDaysSelectorPage({ params }: { params: Promise<{ tri
 function formatISODate(d: Date) {
   return new Date(d).toISOString().slice(0, 10)
 }
+
 

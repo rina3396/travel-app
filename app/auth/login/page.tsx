@@ -1,4 +1,4 @@
-ï»¿"use client"
+"use client"
 
 import { FormEvent, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
@@ -20,10 +20,10 @@ export default function LoginPage() {
         let mounted = true
         ;(async () => {
             const { data: { session } } = await supabase.auth.getSession()
-            if (mounted && session) router.replace("/trips/new")
+            if (mounted && session) router.replace("/trips")
         })()
         const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
-            if (session) router.replace("/trips/new")
+            if (session) router.replace("/trips")
         })
         return () => {
             mounted = false
@@ -35,7 +35,7 @@ export default function LoginPage() {
         if (e) e.preventDefault()
         const normalizedEmail = email.trim().toLowerCase()
         if (!normalizedEmail || !password) {
-            setError("ãƒ¡ãƒ¼ãƒ«ã‚¢ãƒ‰ãƒ¬ã‚¹ã¨ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„ã€‚")
+            setError("ƒ[ƒ‹ƒAƒhƒŒƒX‚ÆƒpƒXƒ[ƒh‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢B")
             return
         }
         setLoading(true)
@@ -44,18 +44,18 @@ export default function LoginPage() {
         setLoading(false)
         if (error) {
             if (error.message === "Invalid login credentials") {
-                setError("ãƒ¡ãƒ¼ãƒ«ã‚¢ãƒ‰ãƒ¬ã‚¹ã¾ãŸã¯ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ãŒæ­£ã—ãã‚ã‚Šã¾ã›ã‚“ã€‚")
+                setError("ƒ[ƒ‹ƒAƒhƒŒƒX‚Ü‚½‚ÍƒpƒXƒ[ƒh‚ª³‚µ‚­‚ ‚è‚Ü‚¹‚ñB")
             } else {
-                setError(`ãƒ­ã‚°ã‚¤ãƒ³ã«å¤±æ•—ã—ã¾ã—ãŸ: ${error.message}`)
+                setError(`ƒƒOƒCƒ“‚É¸”s‚µ‚Ü‚µ‚½: ${error.message}`)
             }
             return
         }
-        router.replace("/trips/new")
+        router.replace("/trips")
     }
 
     const handleSampleLogin = async () => {
         if (!SAMPLE_EMAIL || !SAMPLE_PASSWORD) {
-            setError("ã‚µãƒ³ãƒ—ãƒ«ç”¨ã®ãƒ¡ãƒ¼ãƒ«ã‚¢ãƒ‰ãƒ¬ã‚¹ã¨ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ãŒè¨­å®šã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚NEXT_PUBLIC_SAMPLE_EMAIL / NEXT_PUBLIC_SAMPLE_PASSWORD ã‚’è¨­å®šã—ã¦ãã ã•ã„ã€‚")
+            setError("ƒTƒ“ƒvƒ‹—p‚Ìƒ[ƒ‹ƒAƒhƒŒƒX‚ÆƒpƒXƒ[ƒh‚ªİ’è‚³‚ê‚Ä‚¢‚Ü‚¹‚ñBNEXT_PUBLIC_SAMPLE_EMAIL / NEXT_PUBLIC_SAMPLE_PASSWORD ‚ğİ’è‚µ‚Ä‚­‚¾‚³‚¢B")
             return
         }
         const normalizedEmail = SAMPLE_EMAIL.trim().toLowerCase()
@@ -64,7 +64,7 @@ export default function LoginPage() {
             setPassword(SAMPLE_PASSWORD)
             setLoading(true)
             setError(null)
-            // å…ˆã«ã‚µãƒ³ãƒ—ãƒ«ãƒ¦ãƒ¼ã‚¶ãƒ¼ã‚’ä½œæˆ/æ›´æ–°
+            // æ‚ÉƒTƒ“ƒvƒ‹ƒ†[ƒU[‚ğì¬/XV
             const resp = await fetch("/api/sample-user", {
                 method: "POST",
                 headers: { "content-type": "application/json" },
@@ -72,32 +72,32 @@ export default function LoginPage() {
             })
             if (!resp.ok) {
                 const data = await resp.json().catch(() => ({}))
-                throw new Error(data?.error || "ã‚µãƒ³ãƒ—ãƒ«ãƒ¦ãƒ¼ã‚¶ãƒ¼ã®æº–å‚™ã«å¤±æ•—ã—ã¾ã—ãŸã€‚")
+                throw new Error(data?.error || "ƒTƒ“ƒvƒ‹ƒ†[ƒU[‚Ì€”õ‚É¸”s‚µ‚Ü‚µ‚½B")
             }
-            // ä½œæˆ/æ›´æ–°å¾Œã«ãƒ­ã‚°ã‚¤ãƒ³
+            // ì¬/XVŒã‚ÉƒƒOƒCƒ“
             const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password: SAMPLE_PASSWORD })
             if (error) {
                 if (error.message === "Invalid login credentials") {
-                    throw new Error("ã‚µãƒ³ãƒ—ãƒ«ã®ãƒ¡ãƒ¼ãƒ«ã‚¢ãƒ‰ãƒ¬ã‚¹ã¾ãŸã¯ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ãŒæ­£ã—ãã‚ã‚Šã¾ã›ã‚“ã€‚")
+                    throw new Error("ƒTƒ“ƒvƒ‹‚Ìƒ[ƒ‹ƒAƒhƒŒƒX‚Ü‚½‚ÍƒpƒXƒ[ƒh‚ª³‚µ‚­‚ ‚è‚Ü‚¹‚ñB")
                 }
-                throw new Error(`ã‚µãƒ³ãƒ—ãƒ«ã§ã®ãƒ­ã‚°ã‚¤ãƒ³ã«å¤±æ•—ã—ã¾ã—ãŸ: ${error.message}`)
+                throw new Error(`ƒTƒ“ƒvƒ‹‚Å‚ÌƒƒOƒCƒ“‚É¸”s‚µ‚Ü‚µ‚½: ${error.message}`)
             }
         } catch (e: any) {
-            setError(e?.message ?? "ã‚µãƒ³ãƒ—ãƒ«ã§ã®ãƒ­ã‚°ã‚¤ãƒ³ã«å¤±æ•—ã—ã¾ã—ãŸã€‚")
+            setError(e?.message ?? "ƒTƒ“ƒvƒ‹‚Å‚ÌƒƒOƒCƒ“‚É¸”s‚µ‚Ü‚µ‚½B")
             setLoading(false)
             return
         }
         setLoading(false)
-        router.replace("/trips/new")
+        router.replace("/trips")
     }
 
     return (
         <section className="mx-auto max-w-sm space-y-4 p-4 text-sm">
-            <h1 className="text-lg font-semibold">ãƒ­ã‚°ã‚¤ãƒ³</h1>
-            <p>ãƒ¡ãƒ¼ãƒ«ã‚¢ãƒ‰ãƒ¬ã‚¹ã¨ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã§ãƒ­ã‚°ã‚¤ãƒ³ã—ã¾ã™ã€‚</p>
+            <h1 className="text-lg font-semibold">ƒƒOƒCƒ“</h1>
+            <p>ƒ[ƒ‹ƒAƒhƒŒƒX‚ÆƒpƒXƒ[ƒh‚ÅƒƒOƒCƒ“‚µ‚Ü‚·B</p>
             <form onSubmit={loginWithEmailPassword} className="space-y-3">
                 <label className="flex flex-col gap-2 text-sm">
-                    <span className="font-medium">ãƒ¡ãƒ¼ãƒ«ã‚¢ãƒ‰ãƒ¬ã‚¹</span>
+                    <span className="font-medium">ƒ[ƒ‹ƒAƒhƒŒƒX</span>
                     <input
                         type="email"
                         value={email}
@@ -109,13 +109,13 @@ export default function LoginPage() {
                     />
                 </label>
                 <label className="flex flex-col gap-2 text-sm">
-                    <span className="font-medium">ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰</span>
+                    <span className="font-medium">ƒpƒXƒ[ƒh</span>
                     <input
                         type="password"
                         value={password}
                         onChange={(event) => setPassword(event.target.value)}
                         className="w-full rounded border px-3 py-2"
-                        placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                        placeholder="????????"
                         autoComplete="current-password"
                         required
                     />
@@ -124,18 +124,18 @@ export default function LoginPage() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full rounded bg-blue-600 py-2 text-white disabled:opacity-50"
+                        className="w-full rounded bg-orange-500 py-2 text-white disabled:opacity-50"
                     >
-                        {loading ? "å‡¦ç†ä¸­â€¦" : "ãƒ­ã‚°ã‚¤ãƒ³"}
+                        {loading ? "ˆ—’†c" : "ƒƒOƒCƒ“"}
                     </button>
                     <button
                         type="button"
                         onClick={handleSampleLogin}
                         disabled={loading}
                         className="w-full rounded border py-2 disabled:opacity-50"
-                        title="å…¬é–‹ç’°å¢ƒã§ã¯å€¤ã‚’åŸ‹ã‚è¾¼ã¾ãªã„ã§ãã ã•ã„"
+                        title="ŒöŠJŠÂ‹«‚Å‚Í’l‚ğ–„‚ß‚Ü‚È‚¢‚Å‚­‚¾‚³‚¢"
                     >
-                        ã‚µãƒ³ãƒ—ãƒ«ã§ãƒ­ã‚°ã‚¤ãƒ³
+                        ƒTƒ“ƒvƒ‹‚ÅƒƒOƒCƒ“
                     </button>
                 </div>
             </form>
@@ -143,3 +143,4 @@ export default function LoginPage() {
         </section>
     )
 }
+

@@ -41,7 +41,7 @@ export default function TripSettingsPage({ params }: { params: { tripId: string 
 
   async function save() {
     if (!title.trim()) {
-      setMessage("タイトルを入力してください")
+      setMessage("タイトルを�E力してください")
       return
     }
     setSaving(true)
@@ -57,7 +57,7 @@ export default function TripSettingsPage({ params }: { params: { tripId: string 
   return (
     <section className="mx-auto w-full max-w-2xl space-y-5 p-4">
       <header className="space-y-1">
-        <h1 className="text-xl font-bold">旅の設定</h1>
+        <h1 className="text-xl font-bold">旁E�E設宁E/h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
       </header>
 
@@ -75,13 +75,13 @@ export default function TripSettingsPage({ params }: { params: { tripId: string 
               <input type="date" value={start} onChange={(e) => setStart(e.target.value)} className="rounded border px-3 py-2" />
             </label>
             <label className="grid gap-1 text-sm">
-              <span className="text-gray-600">終了日</span>
+              <span className="text-gray-600">終亁E��</span>
               <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} className="rounded border px-3 py-2" />
             </label>
           </div>
           <div className="flex items-center gap-2">
-            <button type="submit" disabled={saving} className="rounded border px-4 py-2 text-sm hover:bg-gray-50 disabled:opacity-60">
-              {saving ? "保存中…" : "保存"}
+            <button type="submit" disabled={saving} className="rounded bg-orange-500 px-4 py-2 text-sm text-white hover:bg-orange-600 disabled:opacity-60">
+              {saving ? "保存中…" : "保孁E}
             </button>
             {message && <span className="text-xs text-gray-600">{message}</span>}
           </div>
@@ -90,4 +90,5 @@ export default function TripSettingsPage({ params }: { params: { tripId: string 
     </section>
   )
 }
+
 

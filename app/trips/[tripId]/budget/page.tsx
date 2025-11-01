@@ -22,10 +22,8 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
   const { tripId } = usePromise(params)
   const supabase = createClientBrowser()
 
-  // 参加メンバー（trip_members 由来）
-  const [members, setMembers] = useState<Participant[]>([])
-  // 予算サマリ（ウィザード設定の反映）
-  const [budget, setBudget] = useState<BudgetRow | null>(null)
+  // 参加メンバ�E�E�Erip_members 由来�E�E  const [members, setMembers] = useState<Participant[]>([])
+  // 予算サマリ�E�ウィザード設定�E反映�E�E  const [budget, setBudget] = useState<BudgetRow | null>(null)
   // 費用一覧
   const [items, setItems] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
@@ -37,7 +35,7 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
   const [category, setCategory] = useState<Expense["category"]>("meal")
   const [paidBy, setPaidBy] = useState("")
 
-  // 初期読み込み: メンバー・予算・費用
+  // 初期読み込み: メンバ�E・予算�E費用
   useEffect(() => {
     let alive = true
     ;(async () => {
@@ -68,10 +66,8 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
     return () => { alive = false }
   }, [supabase, tripId])
 
-  // 合計
-  const total = useMemo(() => items.reduce((s, x) => s + x.amount, 0), [items])
-  // 均等割ベースの簡易残高
-  const balances = useMemo(() => calcBalances(items, members), [items, members])
+  // 合訁E  const total = useMemo(() => items.reduce((s, x) => s + x.amount, 0), [items])
+  // 坁E��割ベ�Eスの簡易残髁E  const balances = useMemo(() => calcBalances(items, members), [items, members])
 
   async function addExpense(e: React.FormEvent) {
     e.preventDefault()
@@ -111,31 +107,31 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
   return (
     <section className="mx-auto w-full max-w-3xl p-4 space-y-4">
       <header className="space-y-1">
-        <h1 className="text-xl font-bold">予算・費用</h1>
+        <h1 className="text-xl font-bold">予算�E費用</h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
       </header>
 
-      {/* メンバー管理の場所について */}
+      {/* メンバ�E管琁E�E場所につぁE�� */}
       <div className="rounded-2xl border bg-white p-3 text-sm">
-        <p>メンバーの登録・変更は「共有」ページで管理します。</p>
+        <p>メンバ�Eの登録・変更は「�E有」�Eージで管琁E��ます、E/p>
         <p className="mt-1">
-          <Link className="underline" href={`/trips/${encodeURIComponent(tripId)}/share`}>共有ページへ移動</Link>
+          <Link className="underline" href={`/trips/${encodeURIComponent(tripId)}/share`}>共有�Eージへ移勁E/Link>
         </p>
       </div>
 
-      {/* 予算サマリ（ウィザード設定の反映） */}
+      {/* 予算サマリ�E�ウィザード設定�E反映�E�E*/}
       <div className="rounded-2xl border bg-white p-4 grid gap-2">
-        <div className="text-sm">設定済みの予算</div>
+        <div className="text-sm">設定済みの予箁E/div>
         {budget ? (
           <div className="text-lg font-semibold">{budget.amount.toLocaleString()} {budget.currency}</div>
         ) : (
-          <div className="text-sm text-gray-600">予算は未設定です（ウィザード未入力）</div>
+          <div className="text-sm text-gray-600">予算�E未設定です（ウィザード未入力！E/div>
         )}
       </div>
 
       {/* 合計と残高サマリ */}
       <div className="rounded-2xl border bg-white p-4 grid gap-3">
-        <div className="text-sm">合計金額</div>
+        <div className="text-sm">合計��顁E/div>
         <div className="text-2xl font-semibold">¥{formatJPY(total)}</div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {members.map((m) => (
@@ -147,37 +143,37 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
             </div>
           ))}
         </div>
-        <p className="text-xs text-gray-600">※ 正の値は受け取り、負の値は支払いの目安（均等割り）です。</p>
+        <p className="text-xs text-gray-600">※ 正の値は受け取り、負の値は支払いの目安（均等割り）です、E/p>
       </div>
 
       {/* 追加フォーム */}
       <form onSubmit={addExpense} className="rounded-2xl border bg-white p-4 grid gap-3">
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="text-xs text-gray-600">タイトル（必須）</label>
+            <label className="text-xs text-gray-600">タイトル�E�忁E��！E/label>
             <input value={title} onChange={(e) => setTitle(e.target.value)} required
-              placeholder="例）ランチ" className="w-full rounded-xl border px-3 py-2 text-sm" />
+              placeholder="例）ランチE className="w-full rounded-xl border px-3 py-2 text-sm" />
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-gray-600">金額（円）</label>
+            <label className="text-xs text-gray-600">金額（�E�E�E/label>
             <input value={amount} onChange={(e) => setAmount(e.target.value)} type="number" min={0} step={100}
-              placeholder="例）1200" className="w-full rounded-xl border px-3 py-2 text-sm" />
+              placeholder="例！E200" className="w-full rounded-xl border px-3 py-2 text-sm" />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="text-xs text-gray-600">カテゴリ</label>
+            <label className="text-xs text-gray-600">カチE��リ</label>
             <select value={category} onChange={(e) => setCategory(e.target.value as Expense["category"]) }
               className="w-full rounded-xl border px-3 py-2 text-sm bg-white">
-              <option value="meal">食事</option>
-              <option value="transport">交通</option>
-              <option value="lodging">宿泊</option>
-              <option value="ticket">入場/体験</option>
-              <option value="other">その他</option>
+              <option value="meal">食亁E/option>
+              <option value="transport">交送E/option>
+              <option value="lodging">宿況E/option>
+              <option value="ticket">入場/体騁E/option>
+              <option value="other">そ�E仁E/option>
             </select>
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-gray-600">支払者</label>
+            <label className="text-xs text-gray-600">支払老E/label>
             <select value={paidBy} onChange={(e) => setPaidBy(e.target.value)}
               className="w-full rounded-xl border px-3 py-2 text-sm bg-white">
               {members.map((m) => (
@@ -187,7 +183,7 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
           </div>
         </div>
         <div className="flex justify-end">
-          <button type="submit" className="rounded-2xl border px-3 py-2 text-sm shadow-sm hover:bg-gray-50">追加</button>
+          <button type="submit" className="rounded-2xl bg-orange-500 px-3 py-2 text-sm text-white shadow-sm hover:bg-orange-600">追加</button>
         </div>
       </form>
 
@@ -196,17 +192,17 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-600">
             <tr>
-              <th className="px-3 py-2 text-left">日付</th>
+              <th className="px-3 py-2 text-left">日仁E/th>
               <th className="px-3 py-2 text-left">タイトル</th>
-              <th className="px-3 py-2 text-left">カテゴリ</th>
-              <th className="px-3 py-2 text-right">金額</th>
-              <th className="px-3 py-2 text-left">支払者</th>
+              <th className="px-3 py-2 text-left">カチE��リ</th>
+              <th className="px-3 py-2 text-right">金顁E/th>
+              <th className="px-3 py-2 text-left">支払老E/th>
             </tr>
           </thead>
           <tbody>
             {items.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-3 py-4 text-center text-gray-500">まだ費用がありません。</td>
+                <td colSpan={5} className="px-3 py-4 text-center text-gray-500">まだ費用がありません、E/td>
               </tr>
             ) : (
               items.map((x) => (
@@ -241,7 +237,7 @@ function toExpense(r: DbExpense): Expense {
   }
 }
 
-// --- 計算ユーティリティ ---
+// --- 計算ユーチE��リチE�� ---
 function calcBalances(items: Expense[], members: Participant[]) {
   const ids = members.map((m) => m.id)
   const map: Record<string, number> = Object.fromEntries(ids.map((id) => [id, 0]))
@@ -258,15 +254,16 @@ function calcBalances(items: Expense[], members: Participant[]) {
 
 function labelOfCategory(cat: Expense["category"]) {
   switch (cat) {
-    case "meal": return "食事"
-    case "transport": return "交通"
-    case "lodging": return "宿泊"
-    case "ticket": return "入場/体験"
-    default: return "その他"
+    case "meal": return "食亁E
+    case "transport": return "交送E
+    case "lodging": return "宿況E
+    case "ticket": return "入場/体騁E
+    default: return "そ�E仁E
   }
 }
 
 function formatJPY(v: number) {
   return new Intl.NumberFormat("ja-JP").format(Math.round(v))
 }
+
 
