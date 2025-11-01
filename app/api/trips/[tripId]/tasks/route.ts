@@ -2,14 +2,14 @@
 import { createServer } from "@/lib/supabase/server"
 
 export async function GET(_: Request, { params }: { params: { tripId: string } }) {
-    const s = createServer()
+    const { supabase: s } = await createServer()
     const { data, error } = await s.from("tasks").select("*").eq("trip_id", params.tripId).order("created_at", { ascending: false })
     if (error) return new Response(error.message, { status: 500 })
     return Response.json(data)
 }
 
 export async function POST(req: Request, { params }: { params: { tripId: string } }) {
-    const s = createServer()
+    const { supabase: s } = await createServer()
     const b = await req.json()
     const { data, error } = await s.from("tasks").insert({
         trip_id: params.tripId,

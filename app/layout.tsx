@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   // 共通レイアウト（ヘッダー/フッター/トーストなどをここで）
   return (
-    <html lang="ja">
+    <html lang="ja" suppressHydrationWarning>
       <body className="min-h-dvh bg-white text-gray-900">
         {/* --- 共通ヘッダー --- */}
         <AppHeader />

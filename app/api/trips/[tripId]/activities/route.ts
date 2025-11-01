@@ -2,7 +2,7 @@
 import { createServer } from "@/lib/supabase/server"
 
 export async function GET(_: Request, { params }: { params: { tripId: string } }) {
-    const supabase = createServer()
+    const { supabase } = await createServer()
     const { data, error } = await supabase
         .from("activities")
         .select("id,trip_id,title,start_time,end_time,location,note,day_id,order_no")
@@ -13,7 +13,7 @@ export async function GET(_: Request, { params }: { params: { tripId: string } }
 }
 
 export async function POST(req: Request, { params }: { params: { tripId: string } }) {
-    const supabase = createServer()
+    const { supabase } = await createServer()
     const body = await req.json()
     const { data, error } = await supabase
         .from("activities")

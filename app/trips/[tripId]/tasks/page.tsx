@@ -11,7 +11,7 @@
 
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, use as usePromise } from "react"
 import type { Task } from "@/types/trips"
 
 /**
@@ -23,8 +23,8 @@ import type { Task } from "@/types/trips"
  * 配置: app/trips/[tripId]/tasks/page.tsx
  */
 
-export default function TripTasksPage({ params }: { params: { tripId: string } }) {
-    const tripId = params.tripId
+export default function TripTasksPage({ params }: { params: Promise<{ tripId: string }> }) {
+    const { tripId } = usePromise(params)
 
     const [items, setItems] = useState<Task[]>(seedTasks(tripId))
     const [title, setTitle] = useState("")

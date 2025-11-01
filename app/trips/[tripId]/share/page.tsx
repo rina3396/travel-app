@@ -1,13 +1,13 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, use as usePromise } from "react"
 import { createClientBrowser } from "@/lib/supabase/client"
 
 type Member = { user_id: string; role: string | null }
 type ShareLink = { id: string; is_enabled: boolean; expires_at: string | null }
 
-export default function TripSharePage({ params }: { params: { tripId: string } }) {
-  const tripId = params.tripId
+export default function TripSharePage({ params }: { params: Promise<{ tripId: string }> }) {
+  const { tripId } = usePromise(params)
   const supabase = useMemo(() => createClientBrowser(), [])
 
   const [members, setMembers] = useState<Member[]>([])
@@ -16,6 +16,10 @@ export default function TripSharePage({ params }: { params: { tripId: string } }
 
   const [link, setLink] = useState<ShareLink | null>(null)
   const [copyOk, setCopyOk] = useState<string | null>(null)
+
+  // 追加フォーム（メール入力→UUID解決→登録）
+  const [newEmail, setNewEmail] = useState("")
+  const [newRole, setNewRole] = useState<"viewer" | "editor">("viewer")
 
   useEffect(() => {
     let alive = true
@@ -36,7 +40,7 @@ export default function TripSharePage({ params }: { params: { tripId: string } }
         ])
         if (!alive) return
         if (mErr) throw new Error(mErr.message)
-        if (lErr && lErr.code !== "PGRST116") throw new Error(lErr.message)
+        if (lErr && (lErr as any).code !== "PGRST116") throw new Error(lErr.message)
         setMembers(mData ?? [])
         setLink(lData ?? null)
       } catch (e: any) {
@@ -62,10 +66,60 @@ export default function TripSharePage({ params }: { params: { tripId: string } }
     }
   }
 
+  const isValidEmail = (s: string) => /.+@.+\..+/.test(s.trim().toLowerCase())
+
+  async function addMember(e: React.FormEvent) {
+    e.preventDefault()
+    const email = newEmail.trim().toLowerCase()
+    if (!isValidEmail(email)) { setError("メールアドレスの形式が正しくありません"); return }
+    setError(null)
+    try {
+      setLoading(true)
+      // email から UUID を解決（サーバー側: service role 使用）
+      const lu = await fetch('/api/admin/users/lookup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) })
+      if (!lu.ok) throw new Error(await lu.text())
+      const { id } = await lu.json()
+      if (members.some(m => m.user_id === id)) { setError("既に登録されています"); return }
+      const { error: insErr } = await supabase.from("trip_members").insert({ trip_id: tripId, user_id: id, role: newRole })
+      if (insErr) throw new Error(insErr.message)
+      const { data: mData, error: mErr } = await supabase.from("trip_members").select("user_id, role").eq("trip_id", tripId)
+      if (mErr) throw new Error(mErr.message)
+      setMembers(mData ?? [])
+      setNewEmail("")
+      setNewRole("viewer")
+    } catch (e: any) {
+      setError(e?.message ?? "追加に失敗しました")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function updateRole(userId: string, role: "viewer" | "editor") {
+    try {
+      setError(null)
+      const { error: upErr } = await supabase.from("trip_members").update({ role }).eq("trip_id", tripId).eq("user_id", userId)
+      if (upErr) throw new Error(upErr.message)
+      setMembers(prev => prev.map(m => m.user_id === userId ? { ...m, role } : m))
+    } catch (e: any) {
+      setError(e?.message ?? "更新に失敗しました")
+    }
+  }
+
+  async function removeMember(userId: string) {
+    try {
+      setError(null)
+      const { error: delErr } = await supabase.from("trip_members").delete().eq("trip_id", tripId).eq("user_id", userId)
+      if (delErr) throw new Error(delErr.message)
+      setMembers(prev => prev.filter(m => m.user_id !== userId))
+    } catch (e: any) {
+      setError(e?.message ?? "削除に失敗しました")
+    }
+  }
+
   return (
     <section className="mx-auto w-full max-w-2xl space-y-5 p-4">
       <header className="space-y-1">
-        <h1 className="text-xl font-bold">共有メンバー</h1>
+        <h1 className="text-xl font-bold">共有・メンバー管理</h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
       </header>
 
@@ -75,9 +129,7 @@ export default function TripSharePage({ params }: { params: { tripId: string } }
         {publicUrl ? (
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <code className="flex-1 truncate rounded border bg-gray-50 px-2 py-1 text-xs">{publicUrl}</code>
-            <button onClick={copyShareUrl} className="rounded border px-3 py-1 text-sm hover:bg-gray-50">
-              コピー
-            </button>
+            <button onClick={copyShareUrl} className="rounded border px-3 py-1 text-sm hover:bg-gray-50">コピー</button>
           </div>
         ) : (
           <p className="text-sm text-gray-600">有効な共有リンクはありません。</p>
@@ -86,7 +138,22 @@ export default function TripSharePage({ params }: { params: { tripId: string } }
         <p className="mt-2 text-xs text-gray-500">公開ページ: /share/[shareId]</p>
       </div>
 
-      {/* メンバー一覧 */}
+      {/* メンバーの追加 */}
+      <form onSubmit={addMember} className="rounded-2xl border bg-white p-4 grid gap-3">
+        <div className="text-sm font-medium">メンバーの追加</div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="user@example.com" className="w-full rounded-xl border px-3 py-2 text-sm" required />
+          <select value={newRole} onChange={(e) => setNewRole(e.target.value as any)} className="rounded-xl border px-3 py-2 text-sm bg-white">
+            <option value="viewer">viewer（閲覧）</option>
+            <option value="editor">editor（編集）</option>
+          </select>
+          <div className="flex justify-end">
+            <button type="submit" disabled={loading} className="rounded-xl border px-3 py-2 text-sm shadow-sm hover:bg-gray-50 disabled:opacity-60">追加</button>
+          </div>
+        </div>
+      </form>
+
+      {/* メンバー一覧と変更 */}
       <div className="rounded-2xl border bg-white">
         <div className="border-b p-3 text-sm font-medium">メンバー</div>
         {loading ? (
@@ -101,13 +168,21 @@ export default function TripSharePage({ params }: { params: { tripId: string } }
               <li key={m.user_id} className="flex items-center justify-between p-3 text-sm">
                 <div className="min-w-0">
                   <div className="truncate font-medium">{m.user_id}</div>
-                  {m.role && <div className="text-xs text-gray-600">{m.role}</div>}
+                </div>
+                <div className="flex items-center gap-2">
+                  <select value={m.role ?? "viewer"} onChange={(e) => updateRole(m.user_id, e.target.value as any)} className="rounded-lg border px-2 py-1 text-xs bg-white">
+                    <option value="viewer">viewer</option>
+                    <option value="editor">editor</option>
+                  </select>
+                  <button onClick={() => removeMember(m.user_id)} className="rounded-lg border px-2 py-1 text-xs hover:bg-red-50 hover:border-red-300">削除</button>
                 </div>
               </li>
             ))}
           </ul>
         )}
       </div>
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
     </section>
   )
 }

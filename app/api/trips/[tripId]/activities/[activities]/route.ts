@@ -2,7 +2,7 @@
 import { createServer } from "@/lib/supabase/server"
 
 export async function GET(_: Request, { params }: { params: { tripId: string, activityId: string } }) {
-    const s = createServer()
+    const { supabase: s } = await createServer()
     const { data, error } = await s.from("activities")
         .select("*")
         .eq("trip_id", params.tripId)
@@ -14,7 +14,7 @@ export async function GET(_: Request, { params }: { params: { tripId: string, ac
 
 export async function PATCH(req: Request, { params }: { params: { tripId: string, activityId: string } }) {
     const body = await req.json()
-    const s = createServer()
+    const { supabase: s } = await createServer()
     const { error } = await s.from("activities")
         .update({
             title: body.title,
@@ -32,7 +32,7 @@ export async function PATCH(req: Request, { params }: { params: { tripId: string
 }
 
 export async function DELETE(_: Request, { params }: { params: { tripId: string, activityId: string } }) {
-    const s = createServer()
+    const { supabase: s } = await createServer()
     const { error } = await s.from("activities")
         .delete()
         .eq("trip_id", params.tripId)
