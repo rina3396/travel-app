@@ -3,6 +3,9 @@
 import { useEffect, useMemo, useState, use as usePromise } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
+import Button from "@/components/ui/Button"
+import Card from "@/components/ui/Card"
+import Skeleton from "@/components/ui/Skeleton"
 import type { Activity } from "@/types/trips"
 
 type DbActivity = {
@@ -198,84 +201,96 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
   }
 
   return (
-    <section className="mx-auto w-full max-w-2xl p-4 space-y-4">
+    <section className="mx-auto w-full max-w-2xl p-4 space-y-6">
       <header className="space-y-1">
-        <h1 className="text-xl font-bold">アクチE��ビティ一覧</h1>
+        <h1 className="text-2xl font-bold">アクチE��ビティ一覧</h1>
         <p className="text-sm text-gray-600">tripId: {tripId}{targetDate ? ` / 対象日: ${targetDate}` : ""}</p>
       </header>
 
       {targetDate && tripStart && tripEnd && (
         <div className="flex items-center justify-between">
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => {
               const d = addDays(targetDate, -1)
               if (d >= tripStart) router.push(`/trips/${encodeURIComponent(tripId)}/activities?date=${d}`)
             }}
             disabled={addDays(targetDate, -1) < tripStart}
-            className="rounded-md border border-orange-500 px-3 py-1 text-sm text-orange-700 hover:bg-orange-50 disabled:opacity-50"
           >
             前日へ
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => {
               const d = addDays(targetDate, 1)
               if (d <= tripEnd) router.push(`/trips/${encodeURIComponent(tripId)}/activities?date=${d}`)
             }}
             disabled={addDays(targetDate, 1) > tripEnd}
-            className="rounded-md border border-orange-500 px-3 py-1 text-sm text-orange-700 hover:bg-orange-50 disabled:opacity-50"
           >
             翌日へ
-          </button>
+          </Button>
         </div>
       )}
 
       {targetDate && (
         <div className="flex justify-end">
-          <button onClick={migrateUnassignedToTarget} className="text-xs rounded-md border border-orange-500 px-2 py-1 text-orange-700 hover:bg-orange-50">
-            未割当をこ�E日に移衁E          </button>
+          <Button variant="outline" size="sm" onClick={migrateUnassignedToTarget}>
+            未割当をこ�E日に移衁E          </Button>
         </div>
       )}
 
-      <form onSubmit={addActivity} className="rounded-2xl border bg-white p-3 grid gap-3">
-        <div className="grid grid-cols-3 gap-2">
+      <Card>
+        <form onSubmit={addActivity} className="grid gap-3">
+          <div className="grid grid-cols-3 gap-2">
+            <div className="space-y-1">
+              <label className="text-xs text-gray-600">開姁E/label>
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="w-full rounded-xl border px-3 py-2 text-sm"
+              />
+            </div>
+            <div className="col-span-2 space-y-1">
+              <label className="text-xs text-gray-600">タイトル�E�忁E��！E/label>
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+                placeholder="例）首里城見学"
+                className="w-full rounded-xl border px-3 py-2 text-sm"
+              />
+            </div>
+          </div>
           <div className="space-y-1">
-            <label className="text-xs text-gray-600">開姁E/label>
+            <label className="text-xs text-gray-600">場所</label>
             <input
-              type="time"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="例）首里城�E圁E
               className="w-full rounded-xl border px-3 py-2 text-sm"
             />
           </div>
-          <div className="col-span-2 space-y-1">
-            <label className="text-xs text-gray-600">タイトル�E�忁E��！E/label>
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              placeholder="例）首里城見学"
-              className="w-full rounded-xl border px-3 py-2 text-sm"
-            />
+          <div className="flex justify-end">
+            <Button type="submit" disabled={!canSubmit}>
+              追加
+            </Button>
           </div>
-        </div>
-        <div className="space-y-1">
-          <label className="text-xs text-gray-600">場所</label>
-          <input
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="例）首里城�E圁E
-            className="w-full rounded-xl border px-3 py-2 text-sm"
-          />
-        </div>
-        <div className="flex justify-end">
-          <button type="submit" disabled={!canSubmit} className="rounded-2xl bg-orange-500 px-3 py-2 text-sm text-white shadow-sm hover:bg-orange-600 disabled:opacity-60">
-            追加
-          </button>
-        </div>
-      </form>
+        </form>
+      </Card>
 
-      {loading && <p className="text-sm text-gray-500">読み込み中…</p>}
-      {error && <p className="text-sm text-rose-600">エラー: {error}</p>}
+      {loading && (
+        <Card>
+          <div className="grid gap-2">
+            <Skeleton className="h-4 w-1/3" />
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+        </Card>
+      )}
+      <Card className="border-rose-200 bg-rose-50 text-rose-700"><p className="text-sm">エラー: {error}</p>}
 
       <ul className="rounded-2xl border divide-y bg-white">
         {viewItems.length === 0 ? (
@@ -315,5 +330,6 @@ function addDays(isoDate: string, delta: number) {
   d.setUTCDate(d.getUTCDate() + delta)
   return d.toISOString().slice(0, 10)
 }
+
 
 

@@ -2,6 +2,10 @@
 
 import { useEffect, useMemo, useState, use as usePromise } from "react"
 import type { Task } from "@/types/trips"
+import Button from "@/components/ui/Button"
+import Card from "@/components/ui/Card"
+import Chip from "@/components/ui/Chip"
+import Skeleton from "@/components/ui/Skeleton"
 
 type DbTask = {
   id: string
@@ -111,19 +115,21 @@ export default function TripTasksPage({ params }: { params: Promise<{ tripId: st
   }
 
   return (
-    <section className="mx-auto w-full max-w-2xl p-4 space-y-4">
+    <section className="mx-auto w-full max-w-2xl p-4 space-y-6">
       <header>
-        <h1 className="text-xl font-bold">TODO・持ち物</h1>
+        <h1 className="text-2xl font-bold">TODO・持ち物</h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
       </header>
 
       {/* 追加フォーム */}
-      <form onSubmit={addTask} className="rounded-2xl border bg-white p-3 grid gap-3">
+      <Card>
+      <form onSubmit={addTask} className="grid gap-3">
         <div className="grid grid-cols-3 gap-2">
           <div className="col-span-2 space-y-1">
             <label className="text-xs text-gray-600">タイトル�E�忁E��！E/label>
             <input value={title} onChange={(e) => setTitle(e.target.value)} required
-              placeholder="例）旅程�E印刷、日焼け止めE className="w-full rounded-xl border px-3 py-2 text-sm" />
+              placeholder="例）旅程�E印刷、日焼け止めE
+              className="w-full rounded-xl border px-3 py-2 text-sm" />
           </div>
           <div className="space-y-1">
             <label className="text-xs text-gray-600">種別</label>
@@ -135,17 +141,17 @@ export default function TripTasksPage({ params }: { params: Promise<{ tripId: st
           </div>
         </div>
         <div className="flex justify-end">
-          <button type="submit" className="rounded-2xl bg-orange-500 px-3 py-2 text-sm text-white shadow-sm hover:bg-orange-600">追加</button>
+          <Button type="submit">追加</Button>
         </div>
       </form>
+      </Card>
 
       {/* フィルタ */}
       <div className="flex gap-2">
         {(["all", "todo", "packing"] as const).map((f) => (
-          <button key={f} onClick={() => setFilter(f)}
-            className={`rounded-2xl border px-3 py-1.5 text-xs ${filter === f ? "bg-orange-50 border-orange-500 text-orange-700" : "hover:bg-orange-50"}`}>
+          <Chip key={f} selected={filter === f} onClick={() => setFilter(f)}>
             {f === "all" ? "すべて" : f === "todo" ? "TODO" : "持ち物"}
-          </button>
+          </Chip>
         ))}
       </div>
 
@@ -162,16 +168,23 @@ export default function TripTasksPage({ params }: { params: Promise<{ tripId: st
                 <div className={`truncate ${t.done ? "line-through text-gray-400" : ""}`}>{t.title}</div>
                 <div className="text-xs text-gray-500">{t.kind === "todo" ? "TODO" : "持ち物"}</div>
               </div>
-              <button onClick={() => remove(t.id)} className="rounded-xl border px-2 py-1 text-xs hover:bg-red-50 hover:border-red-300">削除</button>
+              <Button onClick={() => remove(t.id)} variant="outline" size="sm">削除</Button>
             </li>
           ))
         )}
       </ul>
 
-      {loading && <p className="text-xs text-gray-500">読み込み中…</p>}
+      {loading && (
+        <Card>
+          <div className="grid gap-2">
+            <Skeleton className="h-4 w-1/3" />
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+        </Card>
+      )}
       {error && <p className="text-xs text-rose-600">エラー: {error}</p>}
     </section>
   )
 }
-
 

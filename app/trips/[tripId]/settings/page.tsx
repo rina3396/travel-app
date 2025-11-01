@@ -2,6 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { createClientBrowser } from "@/lib/supabase/client"
+import Button from "@/components/ui/Button"
+import Card from "@/components/ui/Card"
+import Skeleton from "@/components/ui/Skeleton"
 
 type Trip = { id: string; title: string | null; start_date: string | null; end_date: string | null }
 
@@ -55,16 +58,20 @@ export default function TripSettingsPage({ params }: { params: { tripId: string 
   }
 
   return (
-    <section className="mx-auto w-full max-w-2xl space-y-5 p-4">
+    <section className="mx-auto w-full max-w-2xl space-y-6 p-4">
       <header className="space-y-1">
-        <h1 className="text-xl font-bold">譌・・險ｭ螳・/h1>
+        <h1 className="text-2xl font-bold">譌・｡後・險ｭ螳・/h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
       </header>
 
       {loading ? (
-        <p className="text-sm text-gray-500">隱ｭ縺ｿ霎ｼ縺ｿ荳ｭ窶ｦ</p>
+        <Card>
+          <Skeleton className="h-4 w-1/3" />
+          <Skeleton className="h-4 w-2/3 mt-2" />
+        </Card>
       ) : (
-        <form className="grid gap-3 rounded-2xl border bg-white p-4" onSubmit={(e) => { e.preventDefault(); save() }}>
+        <Card>
+        <form className="grid gap-3" onSubmit={(e) => { e.preventDefault(); save() }}>
           <label className="grid gap-1 text-sm">
             <span className="text-gray-600">繧ｿ繧､繝医Ν</span>
             <input value={title} onChange={(e) => setTitle(e.target.value)} className="rounded border px-3 py-2" />
@@ -80,15 +87,13 @@ export default function TripSettingsPage({ params }: { params: { tripId: string 
             </label>
           </div>
           <div className="flex items-center gap-2">
-            <button type="submit" disabled={saving} className="rounded bg-orange-500 px-4 py-2 text-sm text-white hover:bg-orange-600 disabled:opacity-60">
-              {saving ? "菫晏ｭ倅ｸｭ窶ｦ" : "菫晏ｭ・}
-            </button>
+            <Button type="submit" disabled={saving}>{saving ? "菫晏ｭ倅ｸｭ窶ｦ" : "菫晏ｭ・}</Button>
             {message && <span className="text-xs text-gray-600">{message}</span>}
           </div>
         </form>
+        </Card>
       )}
     </section>
   )
 }
-
 

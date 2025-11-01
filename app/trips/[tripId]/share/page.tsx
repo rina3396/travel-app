@@ -2,6 +2,9 @@
 
 import { useEffect, useMemo, useState, use as usePromise } from "react"
 import { createClientBrowser } from "@/lib/supabase/client"
+import Button from "@/components/ui/Button"
+import Card from "@/components/ui/Card"
+import Skeleton from "@/components/ui/Skeleton"
 
 type Member = { user_id: string; role: string | null }
 type ShareLink = { id: string; is_enabled: boolean; expires_at: string | null }
@@ -17,7 +20,7 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
   const [link, setLink] = useState<ShareLink | null>(null)
   const [copyOk, setCopyOk] = useState<string | null>(null)
 
-  // 霑ｽ蜉繝輔か繝ｼ繝・医Γ繝ｼ繝ｫ蜈･蜉帚・UUID隗｣豎ｺ竊堤匳骭ｲ・・  const [newEmail, setNewEmail] = useState("")
+  const [newEmail, setNewEmail] = useState("")
   const [newRole, setNewRole] = useState<"viewer" | "editor">("viewer")
 
   useEffect(() => {
@@ -74,10 +77,10 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
     setError(null)
     try {
       setLoading(true)
-      // email 縺九ｉ UUID 繧定ｧ｣豎ｺ・医し繝ｼ繝舌・蛛ｴ: service role 菴ｿ逕ｨ・・      const lu = await fetch('/api/admin/users/lookup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) })
+      const lu = await fetch('/api/admin/users/lookup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) })
       if (!lu.ok) throw new Error(await lu.text())
       const { id } = await lu.json()
-      if (members.some(m => m.user_id === id)) { setError("譌｢縺ｫ逋ｻ骭ｲ縺輔ｌ縺ｦ縺・∪縺・); return }
+      if (members.some(m => m.user_id === id)) { setError("譌｢縺ｫ逋ｻ骭ｲ縺輔ｌ縺ｦ縺・∪縺・); setLoading(false); return }
       const { error: insErr } = await supabase.from("trip_members").insert({ trip_id: tripId, user_id: id, role: newRole })
       if (insErr) throw new Error(insErr.message)
       const { data: mData, error: mErr } = await supabase.from("trip_members").select("user_id, role").eq("trip_id", tripId)
@@ -115,29 +118,30 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
   }
 
   return (
-    <section className="mx-auto w-full max-w-2xl space-y-5 p-4">
+    <section className="mx-auto w-full max-w-2xl space-y-6 p-4">
       <header className="space-y-1">
-        <h1 className="text-xl font-bold">蜈ｱ譛峨・繝｡繝ｳ繝舌・邂｡逅・/h1>
+        <h1 className="text-2xl font-bold">蜈ｱ譛峨・繝｡繝ｳ繝舌・邂｡逅・/h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
       </header>
 
       {/* 蜈ｱ譛峨Μ繝ｳ繧ｯ */}
-      <div className="rounded-2xl border bg-white p-4">
+      <Card>
         <div className="mb-2 text-sm font-medium">蜈ｱ譛峨Μ繝ｳ繧ｯ</div>
         {publicUrl ? (
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <code className="flex-1 truncate rounded border bg-gray-50 px-2 py-1 text-xs">{publicUrl}</code>
-            <button onClick={copyShareUrl} className="rounded border border-orange-500 px-3 py-1 text-sm text-orange-700 hover:bg-orange-50">繧ｳ繝斐・</button>
+            <Button onClick={copyShareUrl} variant="outline" size="sm">繧ｳ繝斐・</Button>
           </div>
         ) : (
           <p className="text-sm text-gray-600">譛牙柑縺ｪ蜈ｱ譛峨Μ繝ｳ繧ｯ縺ｯ縺ゅｊ縺ｾ縺帙ｓ縲・/p>
         )}
         {copyOk && <p className="mt-2 text-xs text-green-600">{copyOk}</p>}
         <p className="mt-2 text-xs text-gray-500">蜈ｬ髢九・繝ｼ繧ｸ: /share/[shareId]</p>
-      </div>
+      </Card>
 
       {/* 繝｡繝ｳ繝舌・縺ｮ霑ｽ蜉 */}
-      <form onSubmit={addMember} className="rounded-2xl border bg-white p-4 grid gap-3">
+      <Card>
+      <form onSubmit={addMember} className="grid gap-3">
         <div className="text-sm font-medium">繝｡繝ｳ繝舌・縺ｮ霑ｽ蜉</div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="user@example.com" className="w-full rounded-xl border px-3 py-2 text-sm" required />
@@ -146,16 +150,20 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
             <option value="editor">editor・育ｷｨ髮・ｼ・/option>
           </select>
           <div className="flex justify-end">
-            <button type="submit" disabled={loading} className="rounded-xl bg-orange-500 px-3 py-2 text-sm text-white shadow-sm hover:bg-orange-600 disabled:opacity-60">霑ｽ蜉</button>
+            <Button type="submit" disabled={loading}>霑ｽ蜉</Button>
           </div>
         </div>
       </form>
+      </Card>
 
       {/* 繝｡繝ｳ繝舌・荳隕ｧ縺ｨ螟画峩 */}
-      <div className="rounded-2xl border bg-white">
+      <Card>
         <div className="border-b p-3 text-sm font-medium">繝｡繝ｳ繝舌・</div>
         {loading ? (
-          <div className="p-4 text-sm text-gray-500">隱ｭ縺ｿ霎ｼ縺ｿ荳ｭ窶ｦ</div>
+          <div className="p-4 text-sm text-gray-500">
+            <Skeleton className="h-4 w-1/3" />
+            <Skeleton className="h-4 w-1/2 mt-2" />
+          </div>
         ) : error ? (
           <div className="p-4 text-sm text-red-600">{error}</div>
         ) : members.length === 0 ? (
@@ -172,17 +180,16 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
                     <option value="viewer">viewer</option>
                     <option value="editor">editor</option>
                   </select>
-                  <button onClick={() => removeMember(m.user_id)} className="rounded-lg border px-2 py-1 text-xs hover:bg-red-50 hover:border-red-300">蜑企勁</button>
+                  <Button onClick={() => removeMember(m.user_id)} variant="outline" size="sm">蜑企勁</Button>
                 </div>
               </li>
             ))}
           </ul>
         )}
-      </div>
+      </Card>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      <Card className="border-rose-200 bg-rose-50 text-rose-700"><p className="text-sm">エラー: {error}</p></Card>
     </section>
   )
 }
-
 

@@ -8,139 +8,134 @@ const SAMPLE_EMAIL = process.env.NEXT_PUBLIC_SAMPLE_EMAIL || ""
 const SAMPLE_PASSWORD = process.env.NEXT_PUBLIC_SAMPLE_PASSWORD || ""
 
 export default function LoginPage() {
-    const router = useRouter()
-    const supabase = useMemo(() => createClientBrowser(), [])
+  const router = useRouter()
+  const supabase = useMemo(() => createClientBrowser(), [])
 
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-    useEffect(() => {
-        let mounted = true
-        ;(async () => {
-            const { data: { session } } = await supabase.auth.getSession()
-            if (mounted && session) router.replace("/trips")
-        })()
-        const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
-            if (session) router.replace("/trips")
-        })
-        return () => {
-            mounted = false
-            sub.subscription.unsubscribe()
-        }
-    }, [router, supabase])
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (mounted && session) router.replace("/trips")
+    })()
+    const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
+      if (session) router.replace("/trips")
+    })
+    return () => { mounted = false; sub.subscription.unsubscribe() }
+  }, [router, supabase])
 
-    const loginWithEmailPassword = async (e?: FormEvent) => {
-        if (e) e.preventDefault()
-        const normalizedEmail = email.trim().toLowerCase()
-        if (!normalizedEmail || !password) {
-            setError("ƒ[ƒ‹ƒAƒhƒŒƒX‚ÆƒpƒXƒ[ƒh‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢B")
-            return
-        }
-        setLoading(true)
-        setError(null)
-        const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password })
-        setLoading(false)
-        if (error) {
-            if (error.message === "Invalid login credentials") {
-                setError("ƒ[ƒ‹ƒAƒhƒŒƒX‚Ü‚½‚ÍƒpƒXƒ[ƒh‚ª³‚µ‚­‚ ‚è‚Ü‚¹‚ñB")
-            } else {
-                setError(`ƒƒOƒCƒ“‚É¸”s‚µ‚Ü‚µ‚½: ${error.message}`)
-            }
-            return
-        }
-        router.replace("/trips")
+  const loginWithEmailPassword = async (e?: FormEvent) => {
+    if (e) e.preventDefault()
+    const normalizedEmail = email.trim().toLowerCase()
+    if (!normalizedEmail || !password) {
+      setError("ãƒ¡ãƒ¼ãƒ«ã‚¢ãƒ‰ãƒ¬ã‚¹ã¨ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã‚’å…¥åŠ›ã—ã¦ãã ã•ã„")
+      return
     }
-
-    const handleSampleLogin = async () => {
-        if (!SAMPLE_EMAIL || !SAMPLE_PASSWORD) {
-            setError("ƒTƒ“ƒvƒ‹—p‚Ìƒ[ƒ‹ƒAƒhƒŒƒX‚ÆƒpƒXƒ[ƒh‚ªİ’è‚³‚ê‚Ä‚¢‚Ü‚¹‚ñBNEXT_PUBLIC_SAMPLE_EMAIL / NEXT_PUBLIC_SAMPLE_PASSWORD ‚ğİ’è‚µ‚Ä‚­‚¾‚³‚¢B")
-            return
-        }
-        const normalizedEmail = SAMPLE_EMAIL.trim().toLowerCase()
-        try {
-            setEmail(normalizedEmail)
-            setPassword(SAMPLE_PASSWORD)
-            setLoading(true)
-            setError(null)
-            // æ‚ÉƒTƒ“ƒvƒ‹ƒ†[ƒU[‚ğì¬/XV
-            const resp = await fetch("/api/sample-user", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ email: normalizedEmail, password: SAMPLE_PASSWORD }),
-            })
-            if (!resp.ok) {
-                const data = await resp.json().catch(() => ({}))
-                throw new Error(data?.error || "ƒTƒ“ƒvƒ‹ƒ†[ƒU[‚Ì€”õ‚É¸”s‚µ‚Ü‚µ‚½B")
-            }
-            // ì¬/XVŒã‚ÉƒƒOƒCƒ“
-            const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password: SAMPLE_PASSWORD })
-            if (error) {
-                if (error.message === "Invalid login credentials") {
-                    throw new Error("ƒTƒ“ƒvƒ‹‚Ìƒ[ƒ‹ƒAƒhƒŒƒX‚Ü‚½‚ÍƒpƒXƒ[ƒh‚ª³‚µ‚­‚ ‚è‚Ü‚¹‚ñB")
-                }
-                throw new Error(`ƒTƒ“ƒvƒ‹‚Å‚ÌƒƒOƒCƒ“‚É¸”s‚µ‚Ü‚µ‚½: ${error.message}`)
-            }
-        } catch (e: any) {
-            setError(e?.message ?? "ƒTƒ“ƒvƒ‹‚Å‚ÌƒƒOƒCƒ“‚É¸”s‚µ‚Ü‚µ‚½B")
-            setLoading(false)
-            return
-        }
-        setLoading(false)
-        router.replace("/trips")
+    setLoading(true)
+    setError(null)
+    const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password })
+    setLoading(false)
+    if (error) {
+      if (error.message === "Invalid login credentials") {
+        setError("ãƒ¡ãƒ¼ãƒ«ã‚¢ãƒ‰ãƒ¬ã‚¹ã¾ãŸã¯ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ãŒæ­£ã—ãã‚ã‚Šã¾ã›ã‚“")
+      } else {
+        setError(`ãƒ­ã‚°ã‚¤ãƒ³ã«å¤±æ•—ã—ã¾ã—ãŸ: ${error.message}`)
+      }
+      return
     }
+    router.replace("/trips")
+  }
 
-    return (
-        <section className="mx-auto max-w-sm space-y-4 p-4 text-sm">
-            <h1 className="text-lg font-semibold">ƒƒOƒCƒ“</h1>
-            <p>ƒ[ƒ‹ƒAƒhƒŒƒX‚ÆƒpƒXƒ[ƒh‚ÅƒƒOƒCƒ“‚µ‚Ü‚·B</p>
-            <form onSubmit={loginWithEmailPassword} className="space-y-3">
-                <label className="flex flex-col gap-2 text-sm">
-                    <span className="font-medium">ƒ[ƒ‹ƒAƒhƒŒƒX</span>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(event) => setEmail(event.target.value)}
-                        className="w-full rounded border px-3 py-2"
-                        placeholder="you@example.com"
-                        autoComplete="email"
-                        required
-                    />
-                </label>
-                <label className="flex flex-col gap-2 text-sm">
-                    <span className="font-medium">ƒpƒXƒ[ƒh</span>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(event) => setPassword(event.target.value)}
-                        className="w-full rounded border px-3 py-2"
-                        placeholder="????????"
-                        autoComplete="current-password"
-                        required
-                    />
-                </label>
-                <div className="flex flex-col gap-2">
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full rounded bg-orange-500 py-2 text-white disabled:opacity-50"
-                    >
-                        {loading ? "ˆ—’†c" : "ƒƒOƒCƒ“"}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleSampleLogin}
-                        disabled={loading}
-                        className="w-full rounded border py-2 disabled:opacity-50"
-                        title="ŒöŠJŠÂ‹«‚Å‚Í’l‚ğ–„‚ß‚Ü‚È‚¢‚Å‚­‚¾‚³‚¢"
-                    >
-                        ƒTƒ“ƒvƒ‹‚ÅƒƒOƒCƒ“
-                    </button>
-                </div>
-            </form>
-            {error && <p className="text-red-600">{error}</p>}
-        </section>
-    )
+  const handleSampleLogin = async () => {
+    if (!SAMPLE_EMAIL || !SAMPLE_PASSWORD) {
+      setError("ã‚µãƒ³ãƒ—ãƒ«ç”¨ã®ãƒ¡ãƒ¼ãƒ«ã‚¢ãƒ‰ãƒ¬ã‚¹ã¨ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ãŒè¨­å®šã•ã‚Œã¦ã„ã¾ã›ã‚“ã€‚NEXT_PUBLIC_SAMPLE_EMAIL / NEXT_PUBLIC_SAMPLE_PASSWORD ã‚’è¨­å®šã—ã¦ãã ã•ã„ã€‚")
+      return
+    }
+    const normalizedEmail = SAMPLE_EMAIL.trim().toLowerCase()
+    try {
+      setEmail(normalizedEmail)
+      setPassword(SAMPLE_PASSWORD)
+      setLoading(true)
+      setError(null)
+      const resp = await fetch("/api/sample-user", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: normalizedEmail, password: SAMPLE_PASSWORD }),
+      })
+      if (!resp.ok) {
+        const data = await resp.json().catch(() => ({}))
+        throw new Error(data?.error || "ã‚µãƒ³ãƒ—ãƒ«ãƒ¦ãƒ¼ã‚¶ãƒ¼ã®ä½œæˆã«å¤±æ•—ã—ã¾ã—ãŸã€‚")
+      }
+      const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password: SAMPLE_PASSWORD })
+      if (error) {
+        if (error.message === "Invalid login credentials") {
+          throw new Error("ã‚µãƒ³ãƒ—ãƒ«ã®ãƒ¡ãƒ¼ãƒ«ã‚¢ãƒ‰ãƒ¬ã‚¹ã¾ãŸã¯ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ãŒæ­£ã—ãã‚ã‚Šã¾ã›ã‚“ã€‚")
+        }
+        throw new Error(`ã‚µãƒ³ãƒ—ãƒ«ã§ã®ãƒ­ã‚°ã‚¤ãƒ³ã«å¤±æ•—ã—ã¾ã—ãŸ: ${error.message}`)
+      }
+    } catch (e: any) {
+      setError(e?.message ?? "ã‚µãƒ³ãƒ—ãƒ«ã§ã®ãƒ­ã‚°ã‚¤ãƒ³ã«å¤±æ•—ã—ã¾ã—ãŸã€‚")
+      setLoading(false)
+      return
+    }
+    setLoading(false)
+    router.replace("/trips")
+  }
+
+  return (
+    <section className="mx-auto max-w-sm space-y-4 p-4 text-sm">
+      <h1 className="text-lg font-semibold">ãƒ­ã‚°ã‚¤ãƒ³</h1>
+      <p>ãƒ¡ãƒ¼ãƒ«ã‚¢ãƒ‰ãƒ¬ã‚¹ã¨ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰ã§ãƒ­ã‚°ã‚¤ãƒ³ã§ãã¾ã™ã€‚</p>
+      <form onSubmit={loginWithEmailPassword} className="space-y-3">
+        <label className="flex flex-col gap-2 text-sm">
+          <span className="font-medium">ãƒ¡ãƒ¼ãƒ«ã‚¢ãƒ‰ãƒ¬ã‚¹</span>
+          <input
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            className="w-full rounded border px-3 py-2"
+            placeholder="you@example.com"
+            autoComplete="email"
+            required
+          />
+        </label>
+        <label className="flex flex-col gap-2 text-sm">
+          <span className="font-medium">ãƒ‘ã‚¹ãƒ¯ãƒ¼ãƒ‰</span>
+          <input
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            className="w-full rounded border px-3 py-2"
+            placeholder="********"
+            autoComplete="current-password"
+            required
+          />
+        </label>
+        <div className="flex flex-col gap-2">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded bg-orange-500 py-2 text-white disabled:opacity-50"
+          >
+            {loading ? "å‡¦ç†ä¸­â€¦" : "ãƒ­ã‚°ã‚¤ãƒ³"}
+          </button>
+          <button
+            type="button"
+            onClick={handleSampleLogin}
+            disabled={loading}
+            className="w-full rounded border py-2 disabled:opacity-50"
+            title="ãƒ‡ãƒ¢ç”¨ã€‚å€‹äººæƒ…å ±ã¯å…¥åŠ›ã—ãªã„ã§ãã ã•ã„"
+          >
+            ã‚µãƒ³ãƒ—ãƒ«ã§ãƒ­ã‚°ã‚¤ãƒ³
+          </button>
+        </div>
+      </form>
+      {error && <p className="text-red-600">{error}</p>}
+    </section>
+  )
 }
 

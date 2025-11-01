@@ -1,6 +1,7 @@
 // app/trips/[tripId]/page.tsx
 import Link from "next/link"
 import { createServer } from "@/lib/supabase/server"
+import Button from "@/components/ui/Button"
 
 export default async function TripDashboardPage({ params }: { params: { tripId: string } }) {
   const { tripId } = params
@@ -15,23 +16,23 @@ export default async function TripDashboardPage({ params }: { params: { tripId: 
   if (error || !trip) {
     return (
       <section className="p-4 space-y-4">
-        <h1 className="text-xl font-bold text-red-600">旅行が見つかりません</h1>
+        <h1 className="text-2xl font-bold text-red-600">旁E��が見つかりません</h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
         <p className="text-sm text-gray-500">{error?.message}</p>
-        <Link className="underline" href="/trips/new">新しい旅行を作成する</Link>
+        <Link className="underline" href="/trips/new">新しい旁E��を作�Eする</Link>
       </section>
     )
   }
 
-  const title = trip.title || "タイトル未設定"
-  const start = trip.start_date ?? "未設定"
-  const end = trip.end_date ?? "未設定"
-  const period = `${start} 〜 ${end}`
+  const title = trip.title || "タイトル未設宁E
+  const start = trip.start_date ?? "未設宁E
+  const end = trip.end_date ?? "未設宁E
+  const period = `${start} 、E${end}`
 
   return (
-    <section className="space-y-6 p-4">
+    <section className="space-y-8 p-4">
       <header className="space-y-1">
-        <h1 className="text-xl font-bold">ダッシュボード</h1>
+        <h1 className="text-2xl font-bold">ダチE��ュボ�EチE/h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
       </header>
 
@@ -41,13 +42,13 @@ export default async function TripDashboardPage({ params }: { params: { tripId: 
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <Link href={`/trips/${tripId}/activities`} className="rounded-xl border border-orange-500 px-3 py-3 text-center text-sm font-medium text-orange-700 hover:bg-orange-50">アクティビティ</Link>
-        <Link href={`/trips/${tripId}/days`} className="rounded-xl border border-orange-500 px-3 py-3 text-center text-sm font-medium text-orange-700 hover:bg-orange-50">日別スケジュール</Link>
-        <Link href={`/trips/${tripId}/budget`} className="rounded-xl border border-orange-500 px-3 py-3 text-center text-sm font-medium text-orange-700 hover:bg-orange-50">予算・費用</Link>
-        <Link href={`/trips/${tripId}/tasks`} className="rounded-xl border border-orange-500 px-3 py-3 text-center text-sm font-medium text-orange-700 hover:bg-orange-50">TODO・持ち物</Link>
-        <Link href={`/trips/${tripId}/share`} className="rounded-xl border border-orange-500 px-3 py-3 text-center text-sm font-medium text-orange-700 hover:bg-orange-50">共有</Link>
-        <Link href={`/trips/${tripId}/settings`} className="rounded-xl border border-orange-500 px-3 py-3 text-center text-sm font-medium text-orange-700 hover:bg-orange-50">設定</Link>
-        <Link href={`/trips/${tripId}/preview`} className="rounded-xl bg-orange-500 px-3 py-3 text-center text-sm font-medium text-white hover:bg-orange-600">プレビュー</Link>
+        <Button href={`/trips/${tripId}/activities`} variant="outline">アクチE��ビティ</Button>
+        <Button href={`/trips/${tripId}/days`} variant="outline">日別スケジュール</Button>
+        <Button href={`/trips/${tripId}/budget`} variant="outline">予算�E費用</Button>
+        <Button href={`/trips/${tripId}/tasks`} variant="outline">TODO・持ち物</Button>
+        <Button href={`/trips/${tripId}/share`} variant="outline">共朁E/Button>
+        <Button href={`/trips/${tripId}/settings`} variant="outline">設宁E/Button>
+        <Button href={`/trips/${tripId}/preview`} variant="primary">プレビュー</Button>
       </div>
     </section>
   )

@@ -2,6 +2,9 @@
 
 import { useEffect, useMemo, useState, use as usePromise } from "react"
 import Link from "next/link"
+import Button from "@/components/ui/Button"
+import Card from "@/components/ui/Card"
+import Skeleton from "@/components/ui/Skeleton"
 import { createClientBrowser } from "@/lib/supabase/client"
 import type { Participant, Expense } from "@/types/trips"
 
@@ -22,20 +25,17 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
   const { tripId } = usePromise(params)
   const supabase = createClientBrowser()
 
-  // 蜿ょ刈繝｡繝ｳ繝舌・・・rip_members 逕ｱ譚･・・  const [members, setMembers] = useState<Participant[]>([])
-  // 莠育ｮ励し繝槭Μ・医え繧｣繧ｶ繝ｼ繝芽ｨｭ螳壹・蜿肴丐・・  const [budget, setBudget] = useState<BudgetRow | null>(null)
-  // 雋ｻ逕ｨ荳隕ｧ
+  const [members, setMembers] = useState<Participant[]>([])
+  const [budget, setBudget] = useState<BudgetRow | null>(null)
   const [items, setItems] = useState<Expense[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // 霑ｽ蜉繝輔か繝ｼ繝
   const [title, setTitle] = useState("")
   const [amount, setAmount] = useState("")
   const [category, setCategory] = useState<Expense["category"]>("meal")
   const [paidBy, setPaidBy] = useState("")
 
-  // 蛻晄悄隱ｭ縺ｿ霎ｼ縺ｿ: 繝｡繝ｳ繝舌・繝ｻ莠育ｮ励・雋ｻ逕ｨ
   useEffect(() => {
     let alive = true
     ;(async () => {
@@ -66,8 +66,8 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
     return () => { alive = false }
   }, [supabase, tripId])
 
-  // 蜷郁ｨ・  const total = useMemo(() => items.reduce((s, x) => s + x.amount, 0), [items])
-  // 蝮・ｭ牙牡繝吶・繧ｹ縺ｮ邁｡譏捺ｮ矩ｫ・  const balances = useMemo(() => calcBalances(items, members), [items, members])
+  const total = useMemo(() => items.reduce((s, x) => s + x.amount, 0), [items])
+  const balances = useMemo(() => calcBalances(items, members), [items, members])
 
   async function addExpense(e: React.FormEvent) {
     e.preventDefault()
@@ -105,32 +105,29 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
   }
 
   return (
-    <section className="mx-auto w-full max-w-3xl p-4 space-y-4">
+    <section className="mx-auto w-full max-w-3xl p-4 space-y-6">
       <header className="space-y-1">
-        <h1 className="text-xl font-bold">莠育ｮ励・雋ｻ逕ｨ</h1>
+        <h1 className="text-2xl font-bold">莠育ｮ励・雋ｻ逕ｨ</h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
       </header>
 
-      {/* 繝｡繝ｳ繝舌・邂｡逅・・蝣ｴ謇縺ｫ縺､縺・※ */}
-      <div className="rounded-2xl border bg-white p-3 text-sm">
-        <p>繝｡繝ｳ繝舌・縺ｮ逋ｻ骭ｲ繝ｻ螟画峩縺ｯ縲悟・譛峨阪・繝ｼ繧ｸ縺ｧ邂｡逅・＠縺ｾ縺吶・/p>
+      <Card className="text-sm">
+        <p>繝｡繝ｳ繝舌・縺ｮ逋ｻ骭ｲ繝ｻ螟画峩縺ｯ縲悟・譛峨阪・繝ｼ繧ｸ縺ｧ邂｡逅・〒縺阪∪縺吶・/p>
         <p className="mt-1">
           <Link className="underline" href={`/trips/${encodeURIComponent(tripId)}/share`}>蜈ｱ譛峨・繝ｼ繧ｸ縺ｸ遘ｻ蜍・/Link>
         </p>
-      </div>
+      </Card>
 
-      {/* 莠育ｮ励し繝槭Μ・医え繧｣繧ｶ繝ｼ繝芽ｨｭ螳壹・蜿肴丐・・*/}
-      <div className="rounded-2xl border bg-white p-4 grid gap-2">
+      <Card className="grid gap-2">
         <div className="text-sm">險ｭ螳壽ｸ医∩縺ｮ莠育ｮ・/div>
         {budget ? (
           <div className="text-lg font-semibold">{budget.amount.toLocaleString()} {budget.currency}</div>
         ) : (
           <div className="text-sm text-gray-600">莠育ｮ励・譛ｪ險ｭ螳壹〒縺呻ｼ医え繧｣繧ｶ繝ｼ繝画悴蜈･蜉幢ｼ・/div>
         )}
-      </div>
+      </Card>
 
-      {/* 蜷郁ｨ医→谿矩ｫ倥し繝槭Μ */}
-      <div className="rounded-2xl border bg-white p-4 grid gap-3">
+      <Card className="grid gap-3">
         <div className="text-sm">蜷郁ｨ磯≡鬘・/div>
         <div className="text-2xl font-semibold">ﾂ･{formatJPY(total)}</div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -144,10 +141,10 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
           ))}
         </div>
         <p className="text-xs text-gray-600">窶ｻ 豁｣縺ｮ蛟､縺ｯ蜿励￠蜿悶ｊ縲∬ｲ縺ｮ蛟､縺ｯ謾ｯ謇輔＞縺ｮ逶ｮ螳会ｼ亥插遲牙牡繧奇ｼ峨〒縺吶・/p>
-      </div>
+      </Card>
 
-      {/* 霑ｽ蜉繝輔か繝ｼ繝 */}
-      <form onSubmit={addExpense} className="rounded-2xl border bg-white p-4 grid gap-3">
+      <Card>
+      <form onSubmit={addExpense} className="grid gap-3">
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
             <label className="text-xs text-gray-600">繧ｿ繧､繝医Ν・亥ｿ・茨ｼ・/label>
@@ -183,12 +180,12 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
           </div>
         </div>
         <div className="flex justify-end">
-          <button type="submit" className="rounded-2xl bg-orange-500 px-3 py-2 text-sm text-white shadow-sm hover:bg-orange-600">霑ｽ蜉</button>
+          <Button type="submit">霑ｽ蜉</Button>
         </div>
       </form>
+      </Card>
 
-      {/* 雋ｻ逕ｨ荳隕ｧ */}
-      <div className="rounded-2xl border bg-white overflow-hidden">
+      <Card className="overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-600">
             <tr>
@@ -217,9 +214,19 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
             )}
           </tbody>
         </table>
-      </div>
+      </Card>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {loading && (
+        <Card>
+          <div className="grid gap-2">
+            <Skeleton className="h-4 w-1/3" />
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+        </Card>
+      )}
+
+      <Card className="border-rose-200 bg-rose-50 text-rose-700"><p className="text-sm">エラー: {error}</p></Card>
     </section>
   )
 }
@@ -237,7 +244,6 @@ function toExpense(r: DbExpense): Expense {
   }
 }
 
-// --- 險育ｮ励Θ繝ｼ繝・ぅ繝ｪ繝・ぅ ---
 function calcBalances(items: Expense[], members: Participant[]) {
   const ids = members.map((m) => m.id)
   const map: Record<string, number> = Object.fromEntries(ids.map((id) => [id, 0]))
@@ -265,5 +271,4 @@ function labelOfCategory(cat: Expense["category"]) {
 function formatJPY(v: number) {
   return new Intl.NumberFormat("ja-JP").format(Math.round(v))
 }
-
 

@@ -1,5 +1,6 @@
 // app/trips/page.tsx
 import Link from "next/link"
+import Button from "@/components/ui/Button"
 import { createServer } from "@/lib/supabase/server"
 
 type Trip = {
@@ -12,8 +13,7 @@ type Trip = {
 export default async function TripsIndexPage() {
   const { supabase } = await createServer()
 
-  // 認証はRLSに任せつつ、一覧を取得
-  const { data: trips, error } = await supabase
+  // 認証はRLSに任せつつ、一覧を取征E  const { data: trips, error } = await supabase
     .from("trips")
     .select("id, title, start_date, end_date")
     .order("updated_at", { ascending: false })
@@ -21,7 +21,7 @@ export default async function TripsIndexPage() {
   if (error) {
     return (
       <section className="mx-auto w-full max-w-2xl space-y-4 p-4">
-        <h1 className="text-xl font-bold">旅行一覧</h1>
+        <h1 className="text-2xl font-bold">旁E��一覧</h1>
         <p className="text-sm text-red-600">{error.message}</p>
       </section>
     )
@@ -30,31 +30,27 @@ export default async function TripsIndexPage() {
   const items: Trip[] = trips ?? []
 
   return (
-    <section className="mx-auto w-full max-w-2xl space-y-5 p-4">
+    <section className="mx-auto w-full max-w-2xl space-y-6 p-4">
       <header className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">旅行一覧</h1>
+        <h1 className="text-2xl font-bold">旁E��一覧</h1>
       </header>
 
       <ul className="grid grid-cols-1 gap-3">
         {items.map((t) => (
           <li key={t.id} className="rounded-2xl border bg-white p-4 hover:bg-orange-50">
-            <Link href={`/trips/${encodeURIComponent(t.id)}`} className="block">
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="truncate text-base font-medium">{t.title || "タイトル未設定"}</div>
-                  <div className="truncate text-xs text-gray-600">
-                    {(t.start_date ?? "未設定") + " 〜 " + (t.end_date ?? "未設定")}
-                  </div>
-                </div>
-                <span className="shrink-0 rounded-md border border-orange-500 px-2 py-1 text-xs text-orange-700">詳細</span>
-              </div>
-            </Link>
+            <div className="flex items-center justify-between gap-3">
+              <Link href={`/trips/${encodeURIComponent(t.id)}`} className="min-w-0 flex-1">
+                <div className="truncate text-base font-medium">{t.title || "タイトル未設宁E}</div>
+                <div className="truncate text-xs text-gray-600">{(t.start_date ?? "未設宁E) + " 、E" + (t.end_date ?? "未設宁E)}</div>
+              </Link>
+              <Button href={`/trips/${encodeURIComponent(t.id)}`} variant="outline" size="sm">詳細</Button>
+            </div>
           </li>
         ))}
         <li key="__new__" className="rounded-2xl border bg-white p-4 hover:bg-orange-50">
           <Link href="/trips/new" className="block">
             <div className="flex h-16 items-center justify-center text-orange-700">
-              <span className="text-sm font-medium">＋ 新規作成</span>
+              <span className="text-sm font-medium">�E�E新規作�E</span>
             </div>
           </Link>
         </li>
@@ -62,3 +58,4 @@ export default async function TripsIndexPage() {
     </section>
   )
 }
+
