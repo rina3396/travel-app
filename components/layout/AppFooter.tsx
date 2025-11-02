@@ -6,7 +6,8 @@ import BackButton from '@/components/ui/BackButton'
 
 export default function AppFooter() {
   const pathname = usePathname()
-  const showBack = !!pathname && pathname.startsWith('/trips') && !pathname.startsWith('/auth')
+  // '/trips' 一覧では戻るボタンを非表示。'/trips/...' 配下のみ表示。
+  const showBack = !!pathname && pathname.startsWith('/trips/')
   const year = new Date().getFullYear()
   return (
     <footer className="mt-8">
