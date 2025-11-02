@@ -37,12 +37,21 @@ export default function AppHeader() {
             className="group inline-flex items-center gap-2 font-bold text-gray-900 transition ease-out duration-200"
             title="ホームへ"
           >
-            <span className="inline-block translate-y-[0.5px] transition-transform group-hover:-translate-y-0.5">🧭</span>
+            <span className="inline-block translate-y-[0.5px] transition-transform group-hover:-translate-y-0.5">🏝️</span>
             <span className="transition-transform group-hover:-translate-y-0.5">旅のしおり</span>
           </Link>
         </div>
 
         <nav className="flex items-center gap-3 text-sm">
+          {/* 使い方（?）を新規作成の左側に。間隔は広めに */}
+          <Link
+            className={[linkBase, 'mr-6 sm:mr-8 border-orange-500 bg-white text-orange-700 hover:bg-orange-500 hover:text-white hover:border-transparent active:bg-orange-600'].join(' ')}
+            href="/guide"
+            aria-label="使い方"
+            title="使い方"
+          >
+            使い方
+          </Link>
           <Link
             className={[linkBase, 'border-orange-500 bg-white text-orange-700 hover:bg-orange-500 hover:text-white hover:border-transparent active:bg-orange-600'].join(' ')}
             href="/trips/new"
@@ -53,12 +62,12 @@ export default function AppHeader() {
             className={[linkBase, 'border-orange-500 bg-white text-orange-700 hover:bg-orange-500 hover:text-white hover:border-transparent active:bg-orange-600'].join(' ')}
             href="/trips"
           >
-            旅行一覧
+            旅の一覧
           </Link>
           <button
             onClick={handleLogout}
             className={[linkBase, 'border-red-600 bg-red-600 text-white hover:bg-red-700'].join(' ')}
-            title="サインアウト後にログイン画面へ戻ります"
+            title="サインアウトしてログイン画面へ戻ります"
             type="button"
           >
             ログアウト
@@ -68,3 +77,4 @@ export default function AppHeader() {
     </header>
   )
 }
+

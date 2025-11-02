@@ -17,23 +17,23 @@ export default async function TripDashboardPage({ params }: { params: { tripId: 
   if (error || !trip) {
     return (
       <section className="p-4 space-y-4">
-        <h1 className="text-2xl font-bold text-red-600">Trip not found</h1>
+        <h1 className="text-2xl font-bold text-red-600">旅が見つかりません</h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
         {error && <p className="text-sm text-gray-500">{error.message}</p>}
-        <Link className="underline" href="/trips/new">Create a new trip</Link>
+        <Link className="underline" href="/trips/new">新しい旅を作成</Link>
       </section>
     )
   }
 
-  const title = trip.title ?? "Untitled trip"
-  const start = trip.start_date ?? "Unknown start"
-  const end = trip.end_date ?? "Unknown end"
+  const title = trip.title ?? "タイトル未設定"
+  const start = trip.start_date ?? "開始日未設定"
+  const end = trip.end_date ?? "終了日未設定"
   const period = `${start} - ${end}`
 
   return (
     <section className="space-y-8 p-4">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold">Trip Dashboard</h1>
+        <h1 className="text-2xl font-bold">旅のダッシュボード</h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
       </header>
 
@@ -60,18 +60,17 @@ export default async function TripDashboardPage({ params }: { params: { tripId: 
               </span>
             </div>
           </div>
-          <Button href={`/trips/${encodeURIComponent(tripId)}/settings`} variant="outline" size="sm">Edit</Button>
+          <Button href={`/trips/${encodeURIComponent(tripId)}/settings`} variant="outline" size="sm">編集</Button>
         </div>
       </Card>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <Button href={`/trips/${encodeURIComponent(tripId)}/activities`} variant="outline">Activities</Button>
-        <Button href={`/trips/${encodeURIComponent(tripId)}/days`} variant="outline">Daily Schedule</Button>
-        <Button href={`/trips/${encodeURIComponent(tripId)}/budget`} variant="outline">Budget</Button>
-        <Button href={`/trips/${encodeURIComponent(tripId)}/tasks`} variant="outline">Tasks</Button>
-        <Button href={`/trips/${encodeURIComponent(tripId)}/share`} variant="outline">Share</Button>
-        <Button href={`/trips/${encodeURIComponent(tripId)}/settings`} variant="outline">Settings</Button>
-        <Button href={`/trips/${encodeURIComponent(tripId)}/preview`} variant="primary">Preview</Button>
+        <Button href={`/trips/${encodeURIComponent(tripId)}/days`} variant="outline">日程</Button>
+        <Button href={`/trips/${encodeURIComponent(tripId)}/budget`} variant="outline">予算・費用</Button>
+        <Button href={`/trips/${encodeURIComponent(tripId)}/tasks`} variant="outline">タスク</Button>
+        <Button href={`/trips/${encodeURIComponent(tripId)}/share`} variant="outline">共有</Button>
+        <Button href={`/trips/${encodeURIComponent(tripId)}/settings`} variant="outline">設定</Button>
+        <Button href={`/trips/${encodeURIComponent(tripId)}/preview`} variant="primary">プレビュー</Button>
       </div>
     </section>
   )

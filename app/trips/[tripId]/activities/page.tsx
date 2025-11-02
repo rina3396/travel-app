@@ -216,41 +216,95 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
         </div>
       )}
 
-      <Card>
-        <form onSubmit={addActivity} className="grid gap-3">
-          <div className="grid grid-cols-3 gap-2">
+      <Card title="Add Activity" description="Create a new activity with optional time and location.">
+        <form onSubmit={addActivity} className="grid gap-4">
+          <div className="grid gap-3 sm:grid-cols-3">
             <div className="space-y-1">
-              <label className="text-xs text-gray-600">Start</label>
-              <input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="w-full rounded-xl border px-3 py-2 text-sm"
-              />
+              <label className="text-xs text-gray-600" htmlFor="start-time">Start</label>
+              <div className="relative">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                  aria-hidden
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" />
+                </svg>
+                <input
+                  id="start-time"
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 pl-9 text-sm placeholder-gray-400 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60"
+                />
+              </div>
             </div>
-            <div className="col-span-2 space-y-1">
-              <label className="text-xs text-gray-600">Title</label>
-              <input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-                placeholder="e.g., Visit museum"
-                className="w-full rounded-xl border px-3 py-2 text-sm"
-              />
+            <div className="space-y-1 sm:col-span-2">
+              <label className="text-xs text-gray-600" htmlFor="title">Title</label>
+              <div className="relative">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                  aria-hidden
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h18M3 12h18M3 19h18" />
+                </svg>
+                <input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                  placeholder="e.g., Visit museum"
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 pl-9 text-sm placeholder-gray-400 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60"
+                />
+              </div>
             </div>
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-gray-600">Location</label>
-            <input
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="e.g., Downtown"
-              className="w-full rounded-xl border px-3 py-2 text-sm"
-            />
+            <label className="text-xs text-gray-600" htmlFor="location">Location</label>
+            <div className="relative">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                aria-hidden
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21s7-4.5 7-10a7 7 0 1 0-14 0c0 5.5 7 10 7 10Zm0-11.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Z" />
+              </svg>
+              <input
+                id="location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="e.g., Downtown"
+                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 pl-9 text-sm placeholder-gray-400 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60"
+              />
+            </div>
           </div>
+          <div className="h-px bg-gray-100" />
           <div className="flex justify-end">
-            <Button type="submit" disabled={!canSubmit}>
-              Add
+            <Button type="submit" disabled={!canSubmit} className="gap-1.5">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                className="h-4 w-4"
+                aria-hidden
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
+              </svg>
+              Add Activity
             </Button>
           </div>
         </form>
@@ -271,35 +325,71 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
         </Card>
       )}
 
-      <ul className="rounded-2xl divide-y border bg-white">
-        {viewItems.length === 0 ? (
-          <li className="p-4 text-sm text-gray-500">No activities yet. Use the form above to add.</li>
-        ) : (
-          viewItems.map((a) => (
-            <li key={a.id} className="flex items-start gap-3 p-3">
-              <div className="w-16 pt-1 text-sm text-gray-600">{a.startTime || "--:--"}</div>
+      {viewItems.length === 0 ? (
+        <Card className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-50 text-gray-400">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              className="h-5 w-5"
+              aria-hidden
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h18M3 12h18M7 19h10" />
+            </svg>
+          </div>
+          <div className="space-y-0.5">
+            <div className="text-sm font-medium text-gray-900">No activities yet</div>
+            <p className="text-xs text-gray-600">Use the form above to add.</p>
+          </div>
+        </Card>
+      ) : (
+        <Card className="p-2 sm:p-3">
+        <ul className="divide-y">
+          {viewItems.map((a) => (
+            <li key={a.id} className="flex items-center gap-1.5 p-1.5 sm:p-2 transition-colors hover:bg-gray-50">
+              <div className="w-16 text-center text-xs font-medium text-gray-700">
+                {a.startTime || "--:--"}
+              </div>
               <div className="min-w-0 flex-1">
-                <div className="truncate font-medium">{a.title}</div>
-                {a.location && <div className="truncate text-xs text-gray-600">{a.location}</div>}
-                <div className="mt-1">
+                <div className="truncate text-base font-medium leading-tight">{a.title}</div>
+                {a.location && <div className="truncate text-xs text-gray-600 leading-snug">{a.location}</div>}
+                <div className="mt-0">
                   <Link
                     href={`/trips/${encodeURIComponent(tripId)}/activities/${encodeURIComponent(a.id)}`}
-                    className="text-xs underline"
+                    className="text-xs text-gray-700 underline hover:text-gray-900"
                   >
                     Details
                   </Link>
                 </div>
               </div>
-              <button
+              <Button
                 onClick={() => removeActivity(a.id)}
-                className="rounded-xl border px-2 py-1 text-xs hover:border-red-300 hover:bg-red-50"
+                variant="danger"
+                size="sm"
+                aria-label={`Delete ${a.title}`}
+                className="gap-0.5 px-1.5 py-0.5 text-[11px] leading-tight"
               >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  className="h-3 w-3"
+                  aria-hidden
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 7h12M10 11v6m4-6v6M9 7l1-2h4l1 2m-9 0l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12" />
+                </svg>
                 Delete
-              </button>
+              </Button>
             </li>
-          ))
-        )}
-      </ul>
+          ))}
+        </ul>
+        </Card>
+      )}
     </section>
   )
 }

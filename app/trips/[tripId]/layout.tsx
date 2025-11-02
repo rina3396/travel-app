@@ -5,4 +5,3 @@ export default function TripSectionLayout({ children }: { children: React.ReactN
     </section>
   )
 }
-

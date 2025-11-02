@@ -55,7 +55,7 @@ export default function TripSettingsPage({ params }: { params: Promise<{ tripId:
   return (
     <section className="mx-auto w-full max-w-2xl space-y-6 p-4">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold">旅行の設定</h1>
+        <h1 className="text-2xl font-bold">旅の設定</h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
       </header>
 
@@ -65,29 +65,54 @@ export default function TripSettingsPage({ params }: { params: Promise<{ tripId:
           <Skeleton className="mt-2 h-4 w-2/3" />
         </Card>
       ) : (
-        <Card>
-          <form className="grid gap-3" onSubmit={(e) => { e.preventDefault(); save() }}>
-            <label className="grid gap-1 text-sm">
-              <span className="text-gray-600">タイトル</span>
-              <input value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border px-3 py-2" />
-            </label>
-            <div className="grid grid-cols-2 gap-3">
+        <>
+          <Card>
+            <form className="grid gap-3" onSubmit={(e) => { e.preventDefault(); save() }}>
               <label className="grid gap-1 text-sm">
-                <span className="text-gray-600">開始日</span>
-                <input type="date" value={start} onChange={(e) => setStart(e.target.value)} className="rounded-xl border px-3 py-2" />
+                <span className="text-gray-600">タイトル</span>
+                <input value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border px-3 py-2" />
               </label>
-              <label className="grid gap-1 text-sm">
-                <span className="text-gray-600">終了日</span>
-                <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} className="rounded-xl border px-3 py-2" />
-              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="grid gap-1 text-sm">
+                  <span className="text-gray-600">開始日</span>
+                  <input type="date" value={start} onChange={(e) => setStart(e.target.value)} className="rounded-xl border px-3 py-2" />
+                </label>
+                <label className="grid gap-1 text-sm">
+                  <span className="text-gray-600">終了日</span>
+                  <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} className="rounded-xl border px-3 py-2" />
+                </label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button type="submit" disabled={saving}>{saving ? "保存中…" : "保存"}</Button>
+                {message && <span className="text-xs text-gray-600">{message}</span>}
+              </div>
+            </form>
+          </Card>
+
+          <Card title="危険な操作" description="旅のしおり全体を削除します。元に戻せません。">
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-sm text-gray-700">旅のしおりを完全に削除</div>
+              <Button
+                variant="danger"
+                onClick={async () => {
+                  const ok = confirm('この旅のしおりを削除しますか？この操作は元に戻せません。')
+                  if (!ok) return
+                  try {
+                    const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}`, { method: 'DELETE' })
+                    if (!res.ok) throw new Error(await res.text())
+                    location.href = '/trips'
+                  } catch (e) {
+                    alert('削除に失敗しました')
+                  }
+                }}
+              >
+                旅のしおりを削除
+              </Button>
             </div>
-            <div className="flex items-center gap-2">
-              <Button type="submit" disabled={saving}>{saving ? "保存中…" : "保存"}</Button>
-              {message && <span className="text-xs text-gray-600">{message}</span>}
-            </div>
-          </form>
-        </Card>
+          </Card>
+        </>
       )}
     </section>
   )
 }
+
