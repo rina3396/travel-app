@@ -1,15 +1,13 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, use as usePromise } from "react"
 import { createClientBrowser } from "@/lib/supabase/client"
 import Button from "@/components/ui/Button"
 import Card from "@/components/ui/Card"
 import Skeleton from "@/components/ui/Skeleton"
 
-type Trip = { id: string; title: string | null; start_date: string | null; end_date: string | null }
-
-export default function TripSettingsPage({ params }: { params: { tripId: string } }) {
-  const tripId = params.tripId
+export default function TripSettingsPage({ params }: { params: Promise<{ tripId: string }> }) {
+  const { tripId } = usePromise(params)
   const supabase = useMemo(() => createClientBrowser(), [])
 
   const [title, setTitle] = useState("")
@@ -28,7 +26,7 @@ export default function TripSettingsPage({ params }: { params: { tripId: string 
         .from("trips")
         .select("id, title, start_date, end_date")
         .eq("id", tripId)
-        .single()
+        .maybeSingle()
       if (!alive) return
       if (error) {
         setMessage(error.message)
@@ -43,10 +41,7 @@ export default function TripSettingsPage({ params }: { params: { tripId: string 
   }, [supabase, tripId])
 
   async function save() {
-    if (!title.trim()) {
-      setMessage("タイトルを�E力してください")
-      return
-    }
+    if (!title.trim()) { setMessage("タイトルを入力してください"); return }
     setSaving(true)
     setMessage(null)
     const { error } = await supabase
@@ -60,40 +55,39 @@ export default function TripSettingsPage({ params }: { params: { tripId: string 
   return (
     <section className="mx-auto w-full max-w-2xl space-y-6 p-4">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold">旁E���E設宁E/h1>
+        <h1 className="text-2xl font-bold">旅行の設定</h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
       </header>
 
       {loading ? (
         <Card>
           <Skeleton className="h-4 w-1/3" />
-          <Skeleton className="h-4 w-2/3 mt-2" />
+          <Skeleton className="mt-2 h-4 w-2/3" />
         </Card>
       ) : (
         <Card>
-        <form className="grid gap-3" onSubmit={(e) => { e.preventDefault(); save() }}>
-          <label className="grid gap-1 text-sm">
-            <span className="text-gray-600">タイトル</span>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} className="rounded border px-3 py-2" />
-          </label>
-          <div className="grid grid-cols-2 gap-3">
+          <form className="grid gap-3" onSubmit={(e) => { e.preventDefault(); save() }}>
             <label className="grid gap-1 text-sm">
-              <span className="text-gray-600">開始日</span>
-              <input type="date" value={start} onChange={(e) => setStart(e.target.value)} className="rounded border px-3 py-2" />
+              <span className="text-gray-600">タイトル</span>
+              <input value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border px-3 py-2" />
             </label>
-            <label className="grid gap-1 text-sm">
-              <span className="text-gray-600">終亁E��</span>
-              <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} className="rounded border px-3 py-2" />
-            </label>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button type="submit" disabled={saving}>{saving ? "保存中…" : "保孁E}</Button>
-            {message && <span className="text-xs text-gray-600">{message}</span>}
-          </div>
-        </form>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="grid gap-1 text-sm">
+                <span className="text-gray-600">開始日</span>
+                <input type="date" value={start} onChange={(e) => setStart(e.target.value)} className="rounded-xl border px-3 py-2" />
+              </label>
+              <label className="grid gap-1 text-sm">
+                <span className="text-gray-600">終了日</span>
+                <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} className="rounded-xl border px-3 py-2" />
+              </label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button type="submit" disabled={saving}>{saving ? "保存中…" : "保存"}</Button>
+              {message && <span className="text-xs text-gray-600">{message}</span>}
+            </div>
+          </form>
         </Card>
       )}
     </section>
   )
 }
-

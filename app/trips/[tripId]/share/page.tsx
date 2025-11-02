@@ -6,7 +6,9 @@ import Button from "@/components/ui/Button"
 import Card from "@/components/ui/Card"
 import Skeleton from "@/components/ui/Skeleton"
 
-type Member = { user_id: string; role: string | null }
+
+type Member = { user_id: string; role: "viewer" | "editor" | "owner" | null }
+
 type ShareLink = { id: string; is_enabled: boolean; expires_at: string | null }
 
 export default function TripSharePage({ params }: { params: Promise<{ tripId: string }> }) {
@@ -60,10 +62,10 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
     if (!publicUrl) return
     try {
       await navigator.clipboard.writeText(publicUrl)
-      setCopyOk("リンクをコピ�Eしました")
+      setCopyOk("リンクをコピーしました")
       setTimeout(() => setCopyOk(null), 1500)
     } catch {
-      setCopyOk("コピ�Eに失敗しました")
+      setCopyOk("コピーに失敗しました")
       setTimeout(() => setCopyOk(null), 1500)
     }
   }
@@ -80,7 +82,7 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
       const lu = await fetch('/api/admin/users/lookup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) })
       if (!lu.ok) throw new Error(await lu.text())
       const { id } = await lu.json()
-      if (members.some(m => m.user_id === id)) { setError("既に登録されてぁE��ぁE); setLoading(false); return }
+      if (members.some(m => m.user_id === id)) { setError("既に登録されています"); setLoading(false); return }
       const { error: insErr } = await supabase.from("trip_members").insert({ trip_id: tripId, user_id: id, role: newRole })
       if (insErr) throw new Error(insErr.message)
       const { data: mData, error: mErr } = await supabase.from("trip_members").select("user_id, role").eq("trip_id", tripId)
@@ -120,7 +122,7 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
   return (
     <section className="mx-auto w-full max-w-2xl space-y-6 p-4">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold">共有�Eメンバ�E管琁E/h1>
+        <h1 className="text-2xl font-bold">共有・メンバー管理</h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
       </header>
 
@@ -130,44 +132,44 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
         {publicUrl ? (
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <code className="flex-1 truncate rounded border bg-gray-50 px-2 py-1 text-xs">{publicUrl}</code>
-            <Button onClick={copyShareUrl} variant="outline" size="sm">コピ�E</Button>
+            <Button onClick={copyShareUrl} variant="outline" size="sm">コピー</Button>
           </div>
         ) : (
-          <p className="text-sm text-gray-600">有効な共有リンクはありません、E/p>
+          <p className="text-sm text-gray-600">有効な共有リンクはありません。</p>
         )}
         {copyOk && <p className="mt-2 text-xs text-green-600">{copyOk}</p>}
-        <p className="mt-2 text-xs text-gray-500">公開�Eージ: /share/[shareId]</p>
+        <p className="mt-2 text-xs text-gray-500">公開ページ: /share/[shareId]</p>
       </Card>
 
-      {/* メンバ�Eの追加 */}
+      {/* メンバーの追加 */}
       <Card>
-      <form onSubmit={addMember} className="grid gap-3">
-        <div className="text-sm font-medium">メンバ�Eの追加</div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="user@example.com" className="w-full rounded-xl border px-3 py-2 text-sm" required />
-          <select value={newRole} onChange={(e) => setNewRole(e.target.value as any)} className="rounded-xl border px-3 py-2 text-sm bg-white">
-            <option value="viewer">viewer�E�閲覧�E�E/option>
-            <option value="editor">editor�E�編雁E��E/option>
-          </select>
-          <div className="flex justify-end">
-            <Button type="submit" disabled={loading}>追加</Button>
+        <form onSubmit={addMember} className="grid gap-3">
+          <div className="text-sm font-medium">メンバーの追加</div>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="user@example.com" className="w-full rounded-xl border px-3 py-2 text-sm" required />
+            <select value={newRole} onChange={(e) => setNewRole(e.target.value as any)} className="rounded-xl border bg-white px-3 py-2 text-sm">
+              <option value="viewer">viewer（閲覧）</option>
+              <option value="editor">editor（編集）</option>
+            </select>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={loading}>追加</Button>
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
       </Card>
 
-      {/* メンバ�E一覧と変更 */}
+      {/* メンバー一覧 */}
       <Card>
-        <div className="border-b p-3 text-sm font-medium">メンバ�E</div>
+        <div className="border-b p-3 text-sm font-medium">メンバー</div>
         {loading ? (
           <div className="p-4 text-sm text-gray-500">
             <Skeleton className="h-4 w-1/3" />
-            <Skeleton className="h-4 w-1/2 mt-2" />
+            <Skeleton className="mt-2 h-4 w-1/2" />
           </div>
         ) : error ? (
           <div className="p-4 text-sm text-red-600">{error}</div>
         ) : members.length === 0 ? (
-          <div className="p-4 text-sm text-gray-500">メンバ�Eが登録されてぁE��せん、E/div>
+          <div className="p-4 text-sm text-gray-500">メンバーが登録されていません。</div>
         ) : (
           <ul className="divide-y">
             {members.map((m) => (
@@ -176,7 +178,7 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
                   <div className="truncate font-medium">{m.user_id}</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <select value={m.role ?? "viewer"} onChange={(e) => updateRole(m.user_id, e.target.value as any)} className="rounded-lg border px-2 py-1 text-xs bg-white">
+                  <select value={m.role ?? "viewer"} onChange={(e) => updateRole(m.user_id, e.target.value as any)} className="rounded-lg border bg-white px-2 py-1 text-xs">
                     <option value="viewer">viewer</option>
                     <option value="editor">editor</option>
                   </select>
@@ -187,9 +189,6 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
           </ul>
         )}
       </Card>
-
-      <Card className="border-rose-200 bg-rose-50 text-rose-700"><p className="text-sm">�G���[: {error}</p></Card>
     </section>
   )
 }
-

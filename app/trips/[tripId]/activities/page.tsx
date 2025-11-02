@@ -8,19 +8,8 @@ import Card from "@/components/ui/Card"
 import Skeleton from "@/components/ui/Skeleton"
 import type { Activity } from "@/types/trips"
 
-type DbActivity = {
-  id: string
-  trip_id: string
-  title: string
-  start_time?: string | null
-  end_time?: string | null
-  location?: string | null
-  note?: string | null
-  day_id?: string | null
-  order_no?: number | null
-}
-
-function toActivity(x: DbActivity): Activity {
+// Map DB row to UI Activity
+function toActivity(x: any): Activity {
   return {
     id: x.id,
     tripId: x.trip_id,
@@ -34,31 +23,21 @@ function toActivity(x: DbActivity): Activity {
   }
 }
 
-function fromActivityInput(input: Partial<Activity> & { tripId: string }) {
-  return {
-    title: input.title,
-    startTime: input.startTime ?? null,
-    endTime: input.endTime ?? null,
-    location: input.location ?? null,
-    note: input.note ?? null,
-    dayId: input.dayId ?? null,
-    order_no: input.order_no ?? null,
-  }
-}
-
 export default function ActivitiesPage({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = usePromise(params)
   const search = useSearchParams()
-  const targetDate = search.get("date") || undefined
   const router = useRouter()
+  const targetDate = search.get("date") || undefined
 
   const [items, setItems] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
   const [tripStart, setTripStart] = useState<string | null>(null)
   const [tripEnd, setTripEnd] = useState<string | null>(null)
-  const [dayUuid, setDayUuid] = useState<string | null>(null)
+  const [dayId, setDayId] = useState<string | null>(null)
 
+  // Load activities
   useEffect(() => {
     let abort = false
     ;(async () => {
@@ -67,10 +46,10 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
         setError(null)
         const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}/activities`, { cache: "no-store" })
         if (!res.ok) throw new Error(await res.text())
-        const data: DbActivity[] = await res.json()
-        if (!abort) setItems(data.map(toActivity))
+        const data = await res.json()
+        if (!abort) setItems((data as any[]).map(toActivity))
       } catch (e: any) {
-        if (!abort) setError(e?.message ?? "読み込みに失敗しました")
+        if (!abort) setError(e?.message ?? "Failed to load activities")
       } finally {
         if (!abort) setLoading(false)
       }
@@ -78,43 +57,52 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
     return () => { abort = true }
   }, [tripId])
 
+  // Load trip period
   useEffect(() => {
     let abort = false
     ;(async () => {
       try {
         const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}/index`, { cache: "no-store" })
         if (!res.ok) return
-        const data = await res.json()
+        const d = await res.json()
         if (!abort) {
-          setTripStart(data?.start_date ?? null)
-          setTripEnd(data?.end_date ?? null)
+          setTripStart(d?.start_date ?? null)
+          setTripEnd(d?.end_date ?? null)
         }
       } catch {}
     })()
     return () => { abort = true }
   }, [tripId])
 
+  // Ensure day for targetDate and get its id
   useEffect(() => {
     let abort = false
     ;(async () => {
-      if (!targetDate) { setDayUuid(null); return }
+      if (!targetDate) { setDayId(null); return }
       try {
-        const g = await fetch(`/api/trips/${encodeURIComponent(tripId)}/days/${targetDate}`, { cache: 'no-store' })
-        if (!g.ok) throw new Error(await g.text())
-        const d = await g.json()
+        const get = await fetch(`/api/trips/${encodeURIComponent(tripId)}/days/${targetDate}`, { cache: "no-store" })
+        if (!get.ok) throw new Error(await get.text())
+        const info = await get.json()
         if (abort) return
-        if (d.dayId) { setDayUuid(d.dayId); return }
-        const p = await fetch(`/api/trips/${encodeURIComponent(tripId)}/days/${targetDate}`, { method: 'POST' })
-        if (!p.ok) throw new Error(await p.text())
-        const created = await p.json()
-        if (!abort) setDayUuid(created.dayId)
+        if (info.dayId) { setDayId(info.dayId); return }
+        const crt = await fetch(`/api/trips/${encodeURIComponent(tripId)}/days/${targetDate}`, { method: "POST" })
+        if (!crt.ok) throw new Error(await crt.text())
+        const created = await crt.json()
+        if (!abort) setDayId(created.dayId)
       } catch {
-        if (!abort) setDayUuid(null)
+        if (!abort) setDayId(null)
       }
     })()
     return () => { abort = true }
   }, [tripId, targetDate])
 
+  // Derived view
+  const viewItems = useMemo(() => {
+    const arr = targetDate && dayId ? items.filter(a => a.dayId === dayId) : items
+    return [...arr].sort((a, b) => (a.startTime || "").localeCompare(b.startTime || ""))
+  }, [items, targetDate, dayId])
+
+  // Form state
   const [title, setTitle] = useState("")
   const [startTime, setStartTime] = useState("")
   const [location, setLocation] = useState("")
@@ -123,61 +111,47 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
   async function addActivity(e: React.FormEvent) {
     e.preventDefault()
     if (!canSubmit) return
-
-    const optimistic: Activity = {
-      id: `tmp-${crypto.randomUUID()}`,
-      tripId,
-      title: title.trim(),
-      startTime: startTime || undefined,
-      endTime: undefined,
-      location: location.trim() || undefined,
-      note: undefined,
-      dayId: dayUuid ?? undefined,
-    }
-    setItems((prev) => [optimistic, ...prev])
-
     try {
-      const body = fromActivityInput({
-        tripId,
-        title: optimistic.title,
-        startTime: optimistic.startTime,
-        location: optimistic.location,
-        dayId: dayUuid ?? undefined,
-      })
+      setLoading(true)
+      setError(null)
+      const body = {
+        title: title.trim(),
+        startTime: startTime || null,
+        endTime: null,
+        location: location || null,
+        note: null,
+        dayId: targetDate ? dayId : null,
+      }
       const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}/activities`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       })
       if (!res.ok) throw new Error(await res.text())
+      // refresh list
       const ref = await fetch(`/api/trips/${encodeURIComponent(tripId)}/activities`, { cache: "no-store" })
-      const latest: DbActivity[] = await ref.json()
-      setItems(latest.map(toActivity))
+      const data = await ref.json()
+      setItems((data as any[]).map(toActivity))
       setTitle("")
       setStartTime("")
       setLocation("")
     } catch (e: any) {
-      setItems((prev) => prev.filter((x) => x.id !== optimistic.id))
-      setError(e?.message ?? "作�Eに失敗しました")
+      setError(e?.message ?? "Failed to add activity")
+    } finally {
+      setLoading(false)
     }
   }
 
   async function removeActivity(id: string) {
     const before = items
-    setItems(before.filter((x) => x.id !== id))
+    setItems(before.filter(x => x.id !== id))
     try {
-      const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}/activities/${encodeURIComponent(id)}`, { method: "DELETE" })
-      if (!res.ok) throw new Error(await res.text())
-    } catch (e: any) {
+      const del = await fetch(`/api/trips/${encodeURIComponent(tripId)}/activities/${encodeURIComponent(id)}`, { method: "DELETE" })
+      if (!del.ok) throw new Error(await del.text())
+    } catch {
       setItems(before)
-      setError(e?.message ?? "削除に失敗しました")
     }
   }
-
-  const viewItems = useMemo(() => {
-    if (!dayUuid) return items
-    return items.filter((x) => x.dayId === dayUuid)
-  }, [items, dayUuid])
 
   async function migrateUnassignedToTarget() {
     if (!targetDate) return
@@ -187,24 +161,24 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
       const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}/activities/assign-day`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: targetDate })
+        body: JSON.stringify({ date: targetDate }),
       })
       if (!res.ok) throw new Error(await res.text())
       const ref = await fetch(`/api/trips/${encodeURIComponent(tripId)}/activities`, { cache: "no-store" })
-      const latest: DbActivity[] = await ref.json()
-      setItems(latest.map(toActivity))
+      const data = await ref.json()
+      setItems((data as any[]).map(toActivity))
     } catch (e: any) {
-      setError(e?.message ?? "移行に失敗しました")
+      setError(e?.message ?? "Failed to migrate items")
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <section className="mx-auto w-full max-w-2xl p-4 space-y-6">
+    <section className="mx-auto w-full max-w-2xl space-y-6 p-4">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold">アクチE��ビティ一覧</h1>
-        <p className="text-sm text-gray-600">tripId: {tripId}{targetDate ? ` / 対象日: ${targetDate}` : ""}</p>
+        <h1 className="text-2xl font-bold">Activities</h1>
+        <p className="text-sm text-gray-600">tripId: {tripId}{targetDate ? `, date: ${targetDate}` : ""}</p>
       </header>
 
       {targetDate && tripStart && tripEnd && (
@@ -214,22 +188,22 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
             size="sm"
             onClick={() => {
               const d = addDays(targetDate, -1)
-              if (d >= tripStart) router.push(`/trips/${encodeURIComponent(tripId)}/activities?date=${d}`)
+              if (tripStart && d >= tripStart) router.push(`/trips/${encodeURIComponent(tripId)}/activities?date=${d}`)
             }}
-            disabled={addDays(targetDate, -1) < tripStart}
+            disabled={addDays(targetDate, -1) < (tripStart ?? targetDate)}
           >
-            前日へ
+            Prev day
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
               const d = addDays(targetDate, 1)
-              if (d <= tripEnd) router.push(`/trips/${encodeURIComponent(tripId)}/activities?date=${d}`)
+              if (tripEnd && d <= tripEnd) router.push(`/trips/${encodeURIComponent(tripId)}/activities?date=${d}`)
             }}
-            disabled={addDays(targetDate, 1) > tripEnd}
+            disabled={addDays(targetDate, 1) > (tripEnd ?? targetDate)}
           >
-            翌日へ
+            Next day
           </Button>
         </div>
       )}
@@ -237,7 +211,8 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
       {targetDate && (
         <div className="flex justify-end">
           <Button variant="outline" size="sm" onClick={migrateUnassignedToTarget}>
-            未割当をこ�E日に移衁E          </Button>
+            Move unassigned to this day
+          </Button>
         </div>
       )}
 
@@ -245,7 +220,7 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
         <form onSubmit={addActivity} className="grid gap-3">
           <div className="grid grid-cols-3 gap-2">
             <div className="space-y-1">
-              <label className="text-xs text-gray-600">開姁E/label>
+              <label className="text-xs text-gray-600">Start</label>
               <input
                 type="time"
                 value={startTime}
@@ -254,28 +229,28 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
               />
             </div>
             <div className="col-span-2 space-y-1">
-              <label className="text-xs text-gray-600">タイトル�E�忁E��！E/label>
+              <label className="text-xs text-gray-600">Title</label>
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                placeholder="例）首里城見学"
+                placeholder="e.g., Visit museum"
                 className="w-full rounded-xl border px-3 py-2 text-sm"
               />
             </div>
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-gray-600">場所</label>
+            <label className="text-xs text-gray-600">Location</label>
             <input
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="例）首里城�E圁E
+              placeholder="e.g., Downtown"
               className="w-full rounded-xl border px-3 py-2 text-sm"
             />
           </div>
           <div className="flex justify-end">
             <Button type="submit" disabled={!canSubmit}>
-              追加
+              Add
             </Button>
           </div>
         </form>
@@ -290,32 +265,36 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
           </div>
         </Card>
       )}
-      <Card className="border-rose-200 bg-rose-50 text-rose-700"><p className="text-sm">エラー: {error}</p>}
+      {error && (
+        <Card className="border-rose-200 bg-rose-50 text-rose-700">
+          <p className="text-sm">Error: {error}</p>
+        </Card>
+      )}
 
-      <ul className="rounded-2xl border divide-y bg-white">
+      <ul className="rounded-2xl divide-y border bg-white">
         {viewItems.length === 0 ? (
-          <li className="p-4 text-sm text-gray-500">まだアクチE��ビティがありません。上�Eフォームから追加してください、E/li>
+          <li className="p-4 text-sm text-gray-500">No activities yet. Use the form above to add.</li>
         ) : (
           viewItems.map((a) => (
-            <li key={a.id} className="p-3 flex items-start gap-3">
-              <div className="w-16 text-sm text-gray-600 pt-1">{a.startTime || "--:--"}</div>
-              <div className="flex-1 min-w-0">
-                <div className="font-medium truncate">{a.title}</div>
-                {a.location && <div className="text-xs text-gray-600 truncate">{a.location}</div>}
+            <li key={a.id} className="flex items-start gap-3 p-3">
+              <div className="w-16 pt-1 text-sm text-gray-600">{a.startTime || "--:--"}</div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-medium">{a.title}</div>
+                {a.location && <div className="truncate text-xs text-gray-600">{a.location}</div>}
                 <div className="mt-1">
                   <Link
                     href={`/trips/${encodeURIComponent(tripId)}/activities/${encodeURIComponent(a.id)}`}
                     className="text-xs underline"
                   >
-                    詳細へ
+                    Details
                   </Link>
                 </div>
               </div>
               <button
                 onClick={() => removeActivity(a.id)}
-                className="rounded-xl border px-2 py-1 text-xs hover:bg-red-50 hover:border-red-300"
+                className="rounded-xl border px-2 py-1 text-xs hover:border-red-300 hover:bg-red-50"
               >
-                削除
+                Delete
               </button>
             </li>
           ))
@@ -326,10 +305,7 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
 }
 
 function addDays(isoDate: string, delta: number) {
-  const d = new Date(isoDate + 'T00:00:00Z')
+  const d = new Date(isoDate + "T00:00:00Z")
   d.setUTCDate(d.getUTCDate() + delta)
   return d.toISOString().slice(0, 10)
 }
-
-
-

@@ -13,11 +13,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja" suppressHydrationWarning>
-      <body className="min-h-dvh bg-white text-gray-900">
+      <body className="min-h-dvh bg-background text-foreground antialiased">
         <AppHeader />
 
-        <div className="mx-auto max-w-screen-md p-4">
-          <main className="py-4">{children}</main>
+        <div className="mx-auto max-w-screen-lg px-4 sm:px-6 lg:px-8">
+          <main className="py-6">{children}</main>
         </div>
 
         {/* <ToastHost /> */}
@@ -27,4 +27,3 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   )
 }
-

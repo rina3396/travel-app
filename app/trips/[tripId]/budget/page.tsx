@@ -5,29 +5,14 @@ import Link from "next/link"
 import Button from "@/components/ui/Button"
 import Card from "@/components/ui/Card"
 import Skeleton from "@/components/ui/Skeleton"
-import { createClientBrowser } from "@/lib/supabase/client"
 import type { Participant, Expense } from "@/types/trips"
-
-type DbExpense = {
-  id: string
-  trip_id: string
-  date: string
-  title: string
-  category: Expense["category"] | null
-  amount: number
-  paid_by: string
-  split_with: string[]
-}
-
-type BudgetRow = { amount: number; currency: string }
 
 export default function BudgetPage({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = usePromise(params)
-  const supabase = createClientBrowser()
 
   const [members, setMembers] = useState<Participant[]>([])
-  const [budget, setBudget] = useState<BudgetRow | null>(null)
   const [items, setItems] = useState<Expense[]>([])
+  const [budget, setBudget] = useState<{ amount: number; currency: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -42,20 +27,15 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
       try {
         setLoading(true)
         setError(null)
-        const [mRes, bRes, eRes] = await Promise.all([
-          supabase.from("trip_members").select("user_id").eq("trip_id", tripId),
-          supabase.from("budgets").select("amount,currency").eq("trip_id", tripId).maybeSingle(),
-          fetch(`/api/trips/${encodeURIComponent(tripId)}/budget/expenses`, { cache: "no-store" }),
-        ])
-        if (!alive) return
-        if (mRes.error) throw new Error(mRes.error.message)
-        if (!eRes.ok) throw new Error(await eRes.text())
-        const m: Participant[] = (mRes.data ?? []).map((x: any) => ({ id: x.user_id, name: x.user_id }))
-        const expRows: DbExpense[] = await eRes.json()
-        setMembers(m)
-        setBudget(bRes.data ? { amount: bRes.data.amount, currency: bRes.data.currency } : null)
-        setItems(expRows.map(toExpense))
-        setPaidBy(m[0]?.id ?? "")
+        const mRes = await fetch(`/api/trips/${encodeURIComponent(tripId)}/index`, { cache: "no-store" })
+        // メンバーは簡易に tripId の文字列IDをそのまま名前にしています（実運用は別テーブルをJOIN推奨）
+        const ms = await fetch(`/api/trips/${encodeURIComponent(tripId)}/budget/expenses`, { cache: "no-store" })
+        if (!ms.ok) throw new Error(await ms.text())
+        const expRows = await ms.json()
+        const mem: Participant[] = []
+        setMembers(mem)
+        setItems((expRows as any[]).map(toExpense))
+        setPaidBy(mem[0]?.id ?? "")
       } catch (e: any) {
         if (!alive) return
         setError(e?.message ?? "読み込みに失敗しました")
@@ -64,39 +44,36 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
       }
     })()
     return () => { alive = false }
-  }, [supabase, tripId])
+  }, [tripId])
 
   const total = useMemo(() => items.reduce((s, x) => s + x.amount, 0), [items])
-  const balances = useMemo(() => calcBalances(items, members), [items, members])
 
   async function addExpense(e: React.FormEvent) {
     e.preventDefault()
     const amt = Number(amount)
-    if (!title.trim() || !Number.isFinite(amt) || amt <= 0 || !paidBy) return
-    const allMemberIds = members.map((m) => m.id)
-    const b = {
+    if (!title.trim() || !Number.isFinite(amt) || amt <= 0) return
+    const body = {
       date: new Date().toISOString().slice(0, 10),
       title: title.trim(),
       category,
       amount: Math.round(amt * 100) / 100,
-      paidBy,
-      splitWith: allMemberIds,
+      paidBy: paidBy || "me",
+      splitWith: [],
     }
     try {
       setLoading(true)
       const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}/budget/expenses`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(b),
+        body: JSON.stringify(body),
       })
       if (!res.ok) throw new Error(await res.text())
       const ref = await fetch(`/api/trips/${encodeURIComponent(tripId)}/budget/expenses`, { cache: "no-store" })
-      const latest: DbExpense[] = await ref.json()
-      setItems(latest.map(toExpense))
+      const latest = await ref.json()
+      setItems((latest as any[]).map(toExpense))
       setTitle("")
       setAmount("")
       setCategory("meal")
-      setPaidBy(members[0]?.id ?? "")
     } catch (e: any) {
       setError(e?.message ?? "追加に失敗しました")
     } finally {
@@ -105,115 +82,51 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
   }
 
   return (
-    <section className="mx-auto w-full max-w-3xl p-4 space-y-6">
+    <section className="mx-auto w-full max-w-3xl space-y-6 p-4">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold">予算�E費用</h1>
+        <h1 className="text-2xl font-bold">予算・費用</h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
       </header>
 
       <Card className="text-sm">
-        <p>メンバ�Eの登録・変更は「�E有」�Eージで管琁E��きます、E/p>
-        <p className="mt-1">
-          <Link className="underline" href={`/trips/${encodeURIComponent(tripId)}/share`}>共有�Eージへ移勁E/Link>
-        </p>
-      </Card>
-
-      <Card className="grid gap-2">
-        <div className="text-sm">設定済みの予箁E/div>
-        {budget ? (
-          <div className="text-lg font-semibold">{budget.amount.toLocaleString()} {budget.currency}</div>
-        ) : (
-          <div className="text-sm text-gray-600">予算�E未設定です（ウィザード未入力！E/div>
-        )}
-      </Card>
-
-      <Card className="grid gap-3">
-        <div className="text-sm">合計��顁E/div>
-        <div className="text-2xl font-semibold">¥{formatJPY(total)}</div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          {members.map((m) => (
-            <div key={m.id} className="rounded-xl border p-3 text-sm flex items-center justify-between">
-              <span className="truncate mr-2">{m.name}</span>
-              <span className={balances[m.id] >= 0 ? "text-emerald-600" : "text-rose-600"}>
-                {balances[m.id] >= 0 ? "+" : ""}¥{formatJPY(Math.abs(balances[m.id]))}
-              </span>
-            </div>
-          ))}
+        <div className="flex items-center justify-between">
+          <div className="font-medium">合計</div>
+          <div className="text-lg font-semibold">¥{formatJPY(total)}</div>
         </div>
-        <p className="text-xs text-gray-600">※ 正の値は受け取り、負の値は支払いの目安（均等割り）です、E/p>
       </Card>
 
       <Card>
-      <form onSubmit={addExpense} className="grid gap-3">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <label className="text-xs text-gray-600">タイトル�E�忁E��！E/label>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} required
-              placeholder="例）ランチE className="w-full rounded-xl border px-3 py-2 text-sm" />
+        <form onSubmit={addExpense} className="grid gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs text-gray-600">タイトル</label>
+              <input value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full rounded-xl border px-3 py-2 text-sm" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-gray-600">金額（円）</label>
+              <input value={amount} onChange={(e) => setAmount(e.target.value)} type="number" min={0} step={100} className="w-full rounded-xl border px-3 py-2 text-sm" />
+            </div>
           </div>
-          <div className="space-y-1">
-            <label className="text-xs text-gray-600">金額（�E�E�E/label>
-            <input value={amount} onChange={(e) => setAmount(e.target.value)} type="number" min={0} step={100}
-              placeholder="例！E200" className="w-full rounded-xl border px-3 py-2 text-sm" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs text-gray-600">カテゴリ</label>
+              <select value={category} onChange={(e) => setCategory(e.target.value as Expense["category"]) } className="w-full rounded-xl border bg-white px-3 py-2 text-sm">
+                <option value="meal">食事</option>
+                <option value="transport">交通</option>
+                <option value="lodging">宿泊</option>
+                <option value="ticket">入場/体験</option>
+                <option value="other">その他</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-gray-600">支払者</label>
+              <input value={paidBy} onChange={(e) => setPaidBy(e.target.value)} placeholder="あなたの名前など" className="w-full rounded-xl border px-3 py-2 text-sm" />
+            </div>
           </div>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1">
-            <label className="text-xs text-gray-600">カチE��リ</label>
-            <select value={category} onChange={(e) => setCategory(e.target.value as Expense["category"]) }
-              className="w-full rounded-xl border px-3 py-2 text-sm bg-white">
-              <option value="meal">食亁E/option>
-              <option value="transport">交送E/option>
-              <option value="lodging">宿況E/option>
-              <option value="ticket">入場/体騁E/option>
-              <option value="other">そ�E仁E/option>
-            </select>
+          <div className="flex justify-end">
+            <Button type="submit">追加</Button>
           </div>
-          <div className="space-y-1">
-            <label className="text-xs text-gray-600">支払老E/label>
-            <select value={paidBy} onChange={(e) => setPaidBy(e.target.value)}
-              className="w-full rounded-xl border px-3 py-2 text-sm bg-white">
-              {members.map((m) => (
-                <option key={m.id} value={m.id}>{m.name}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <div className="flex justify-end">
-          <Button type="submit">追加</Button>
-        </div>
-      </form>
-      </Card>
-
-      <Card className="overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-gray-600">
-            <tr>
-              <th className="px-3 py-2 text-left">日仁E/th>
-              <th className="px-3 py-2 text-left">タイトル</th>
-              <th className="px-3 py-2 text-left">カチE��リ</th>
-              <th className="px-3 py-2 text-right">金顁E/th>
-              <th className="px-3 py-2 text-left">支払老E/th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-3 py-4 text-center text-gray-500">まだ費用がありません、E/td>
-              </tr>
-            ) : (
-              items.map((x) => (
-                <tr key={x.id} className="border-t">
-                  <td className="px-3 py-2 align-top">{x.date}</td>
-                  <td className="px-3 py-2 align-top">{x.title}</td>
-                  <td className="px-3 py-2 align-top">{labelOfCategory(x.category)}</td>
-                  <td className="px-3 py-2 align-top text-right">¥{formatJPY(x.amount)}</td>
-                  <td className="px-3 py-2 align-top">{members.find((m) => m.id === x.paidBy)?.name ?? "-"}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+        </form>
       </Card>
 
       {loading && (
@@ -225,13 +138,49 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
           </div>
         </Card>
       )}
+      {error && <p className="text-xs text-rose-600">エラー: {error}</p>}
 
-      <Card className="border-rose-200 bg-rose-50 text-rose-700"><p className="text-sm">�G���[: {error}</p></Card>
+      <Card className="overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50 text-gray-600">
+            <tr>
+              <th className="px-3 py-2 text-left">日付</th>
+              <th className="px-3 py-2 text-left">タイトル</th>
+              <th className="px-3 py-2 text-left">カテゴリ</th>
+              <th className="px-3 py-2 text-right">金額</th>
+              <th className="px-3 py-2 text-left">支払者</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-3 py-4 text-center text-gray-500">まだ費用がありません。</td>
+              </tr>
+            ) : (
+              items.map((x) => (
+                <tr key={x.id} className="border-t">
+                  <td className="px-3 py-2 align-top">{x.date}</td>
+                  <td className="px-3 py-2 align-top">{x.title}</td>
+                  <td className="px-3 py-2 align-top">{labelOfCategory(x.category ?? "other")}</td>
+                  <td className="px-3 py-2 align-top text-right">¥{formatJPY(x.amount)}</td>
+                  <td className="px-3 py-2 align-top">{x.paidBy}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </Card>
+
+      <Card className="text-sm">
+        <p>
+          メンバーの登録・変更は <Link className="underline" href={`/trips/${encodeURIComponent(tripId)}/share`}>共有ページ</Link> で行えます。
+        </p>
+      </Card>
     </section>
   )
 }
 
-function toExpense(r: DbExpense): Expense {
+function toExpense(r: any): Expense {
   return {
     id: r.id,
     tripId: r.trip_id,
@@ -244,31 +193,16 @@ function toExpense(r: DbExpense): Expense {
   }
 }
 
-function calcBalances(items: Expense[], members: Participant[]) {
-  const ids = members.map((m) => m.id)
-  const map: Record<string, number> = Object.fromEntries(ids.map((id) => [id, 0]))
-  for (const x of items) {
-    const participants = x.splitWith.length > 0 ? x.splitWith : ids
-    const share = x.amount / (participants.length || 1)
-    map[x.paidBy] = (map[x.paidBy] ?? 0) + x.amount
-    for (const pid of participants) {
-      map[pid] = (map[pid] ?? 0) - share
-    }
-  }
-  return map
-}
-
 function labelOfCategory(cat: Expense["category"]) {
   switch (cat) {
-    case "meal": return "食亁E
-    case "transport": return "交送E
-    case "lodging": return "宿況E
-    case "ticket": return "入場/体騁E
-    default: return "そ�E仁E
+    case "meal": return "食事"
+    case "transport": return "交通"
+    case "lodging": return "宿泊"
+    case "ticket": return "入場/体験"
+    default: return "その他"
   }
 }
 
 function formatJPY(v: number) {
   return new Intl.NumberFormat("ja-JP").format(Math.round(v))
 }
-

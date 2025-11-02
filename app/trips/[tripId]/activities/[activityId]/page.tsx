@@ -63,7 +63,7 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ tripI
   }
 
   return (
-    <section className="mx-auto w-full max-w-2xl p-4 space-y-6">
+    <section className="mx-auto w-full max-w-2xl space-y-6 p-4">
       <header className="space-y-1">
         <h1 className="text-2xl font-bold">アクティビティ詳細</h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
@@ -72,32 +72,32 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ tripI
       {loading ? (
         <Card>
           <Skeleton className="h-4 w-1/3" />
-          <Skeleton className="h-4 w-2/3 mt-2" />
+          <Skeleton className="mt-2 h-4 w-2/3" />
         </Card>
       ) : item ? (
         <Card>
           <div className="grid gap-3">
             <label className="grid gap-1 text-sm">
               <span className="text-gray-600">タイトル</span>
-              <input value={item.title} onChange={(e) => setItem({ ...(item as any), title: e.target.value })} className="rounded border px-3 py-2" />
+              <input value={item.title} onChange={(e) => setItem({ ...(item as any), title: e.target.value })} className="rounded-xl border px-3 py-2" />
             </label>
             <div className="grid grid-cols-2 gap-3">
               <label className="grid gap-1 text-sm">
                 <span className="text-gray-600">開始</span>
-                <input type="time" value={item.start_time ?? ''} onChange={(e) => setItem({ ...(item as any), start_time: e.target.value })} className="rounded border px-3 py-2" />
+                <input type="time" value={item.start_time ?? ''} onChange={(e) => setItem({ ...(item as any), start_time: e.target.value })} className="rounded-xl border px-3 py-2" />
               </label>
               <label className="grid gap-1 text-sm">
                 <span className="text-gray-600">終了</span>
-                <input type="time" value={item.end_time ?? ''} onChange={(e) => setItem({ ...(item as any), end_time: e.target.value })} className="rounded border px-3 py-2" />
+                <input type="time" value={item.end_time ?? ''} onChange={(e) => setItem({ ...(item as any), end_time: e.target.value })} className="rounded-xl border px-3 py-2" />
               </label>
             </div>
             <label className="grid gap-1 text-sm">
               <span className="text-gray-600">場所</span>
-              <input value={item.location ?? ''} onChange={(e) => setItem({ ...(item as any), location: e.target.value })} className="rounded border px-3 py-2" />
+              <input value={item.location ?? ''} onChange={(e) => setItem({ ...(item as any), location: e.target.value })} className="rounded-xl border px-3 py-2" />
             </label>
             <label className="grid gap-1 text-sm">
               <span className="text-gray-600">メモ</span>
-              <textarea value={item.note ?? ''} onChange={(e) => setItem({ ...(item as any), note: e.target.value })} className="rounded border px-3 py-2 min-h-[100px]" />
+              <textarea value={item.note ?? ''} onChange={(e) => setItem({ ...(item as any), note: e.target.value })} className="min-h-[120px] rounded-xl border px-3 py-2" />
             </label>
             <div className="flex items-center justify-end gap-2">
               <Button onClick={remove} variant="outline">削除</Button>
@@ -116,4 +116,3 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ tripI
     </section>
   )
 }
-

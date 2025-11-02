@@ -17,12 +17,29 @@ type LinkProps = CommonProps & AnchorHTMLAttributes<HTMLAnchorElement> & { href:
 export default function Button(props: ButtonProps | LinkProps) {
   const { children, variant = "primary", size = "md", className = "", ...rest } = props as any
 
-  const base = "inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1 disabled:opacity-50"
+  // Add subtle micro-interactions: lift on hover, press on active, shadow transition
+  const base = [
+    "inline-flex items-center justify-center rounded-md font-medium",
+    // transitions and motion preferences
+    "transition ease-out duration-200 motion-reduce:transition-none",
+    // color/focus states
+    "transition-colors focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1",
+    // movement + shadow
+    "shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm",
+    // slightly compress on press (reduced motion users won't see transform)
+    "active:scale-[0.98] motion-reduce:transform-none",
+    // disabled visuals
+    "disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none",
+  ].join(" ")
   const variants: Record<Variant, string> = {
     primary: "bg-orange-500 text-white hover:bg-orange-600",
-    outline: "border border-orange-500 text-orange-700 hover:bg-orange-50",
+    // Outline: invert on hover to avoid double-line look and emphasize intent
+    // - default: white bg + orange border/text
+    // - hover: solid orange bg + white text, border becomes transparent to prevent double lines
+    outline: "border border-orange-500 bg-white text-orange-700 hover:bg-orange-500 hover:text-white hover:border-transparent active:bg-orange-600",
     danger: "bg-red-600 text-white hover:bg-red-700",
-    ghost: "text-gray-700 hover:bg-gray-50",
+    // Ghost: invert to dark bg with white text on hover (no border)
+    ghost: "text-gray-700 hover:bg-gray-900 hover:text-white",
   }
   const sizes: Record<Size, string> = {
     sm: "px-3 py-1.5 text-sm",
@@ -45,4 +62,3 @@ export default function Button(props: ButtonProps | LinkProps) {
     </button>
   )
 }
-
