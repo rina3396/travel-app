@@ -25,6 +25,8 @@
    - Bash: `psql "$DATABASE_URL" -v USER_1="'<TEST_USER_UUID>'" -f lib/supabase/migrations/dev_seed.sql`
    - PowerShell: `psql "$env:DATABASE_URL" -v USER_1="'<TEST_USER_UUID>'" -f lib/supabase/migrations/dev_seed.sql`
    - 補足: `DATABASE_URL` は Project → Settings → Database → Connection string（Direct接続）
+   - Supabase SQLエディタで実行する場合は、こちらのファイルを貼り付けて実行できます:
+     - `lib/supabase/migrations/dev_seed_supabase_editor.sql`（test@example.com を前提にUUIDを自動解決）
 4) ログイン（/auth/login）
    - `test@example.com` / `pw0rd1111`
 
