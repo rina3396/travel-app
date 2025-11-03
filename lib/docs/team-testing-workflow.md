@@ -15,7 +15,7 @@
 ## 手順（SQLを直接流す）
 1) Supabaseでテストユーザーを作成
    - Dashboard → Authentication → Users → Add user
-   - メール/パスワード: `test@example.com` / `test1111`
+   - メール/パスワード: `test@example.com` / `pw0rd1111`
 2) ユーザーUUIDを取得
    - Dashboardのユーザー詳細からIDをコピー、または SQL で取得:
      - Bash: `psql "$DATABASE_URL" -c "select id,email from auth.users where email='test@example.com';"`
@@ -26,7 +26,7 @@
    - PowerShell: `psql "$env:DATABASE_URL" -v USER_1="'<TEST_USER_UUID>'" -f lib/supabase/migrations/dev_seed.sql`
    - 補足: `DATABASE_URL` は Project → Settings → Database → Connection string（Direct接続）
 4) ログイン（/auth/login）
-   - `test@example.com` / `test1111`
+   - `test@example.com` / `pw0rd1111`
 
 ## 確認手順（推奨）
 - `/trips` 旅行一覧が表示される
@@ -47,4 +47,3 @@
 - psql接続エラー: `DATABASE_URL`（ホスト/ユーザー/パスワード/ポート）を再確認
 - テーブル無し/参照エラー: `table_schema.sql` を適用後に再実行
 - 日付ズレ: `baseDate` と表示のズレがある場合は1日進めて試す
-

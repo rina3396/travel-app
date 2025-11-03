@@ -17,14 +17,14 @@
 
 4) 開発用シード投入（SQL を直接実行）
 - Supabase の Dashboard でテストユーザーを作成
-  - メール/パスワード: `test@example.com` / `test1111`
+  - メール/パスワード: `test@example.com` / `pw0rd1111`
 - ユーザーの UUID を取得（Dashboard もしくは psql）
 - psql で実行:
   - Bash: `psql "$DATABASE_URL" -v USER_1="'<TEST_USER_UUID>'" -f lib/supabase/migrations/dev_seed.sql`
   - PowerShell: `psql "$env:DATABASE_URL" -v USER_1="'<TEST_USER_UUID>'" -f lib/supabase/migrations/dev_seed.sql`
 
 5) ログイン情報
-- test@example.com / test1111
+- test@example.com / pw0rd1111
 
 6) 動作確認の主な画面
 - `/trips` 旅行一覧
