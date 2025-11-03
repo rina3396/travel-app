@@ -177,7 +177,7 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
   return (
     <section className="mx-auto w-full max-w-2xl space-y-6 p-4">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold">Activities</h1>
+        <h1 className="text-2xl font-bold">アクティビティ一覧</h1>
         <p className="text-sm text-gray-600">tripId: {tripId}{targetDate ? `, date: ${targetDate}` : ""}</p>
       </header>
 
@@ -192,7 +192,7 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
             }}
             disabled={addDays(targetDate, -1) < (tripStart ?? targetDate)}
           >
-            Prev day
+            前の日
           </Button>
           <Button
             variant="outline"
@@ -203,7 +203,7 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
             }}
             disabled={addDays(targetDate, 1) > (tripEnd ?? targetDate)}
           >
-            Next day
+            次の日
           </Button>
         </div>
       )}
@@ -211,16 +211,16 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
       {targetDate && (
         <div className="flex justify-end">
           <Button variant="outline" size="sm" onClick={migrateUnassignedToTarget}>
-            Move unassigned to this day
+            未割り当てをこの日に移動
           </Button>
         </div>
       )}
 
-      <Card title="Add Activity" description="Create a new activity with optional time and location.">
+      <Card title="アクティビティを追加" description="時間や場所は任意で新規アクティビティを作成します。">
         <form onSubmit={addActivity} className="grid gap-4">
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="space-y-1">
-              <label className="text-xs text-gray-600" htmlFor="start-time">Start</label>
+              <label className="text-xs text-gray-600" htmlFor="start-time">開始時刻</label>
               <div className="relative">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -243,7 +243,7 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
               </div>
             </div>
             <div className="space-y-1 sm:col-span-2">
-              <label className="text-xs text-gray-600" htmlFor="title">Title</label>
+              <label className="text-xs text-gray-600" htmlFor="title">タイトル</label>
               <div className="relative">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -261,14 +261,14 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
-                  placeholder="e.g., Visit museum"
+                  placeholder="例: 美術館を見学"
                   className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 pl-9 text-sm placeholder-gray-400 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60"
                 />
               </div>
             </div>
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-gray-600" htmlFor="location">Location</label>
+            <label className="text-xs text-gray-600" htmlFor="location">場所</label>
             <div className="relative">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -285,7 +285,7 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
                 id="location"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g., Downtown"
+                placeholder="例: 駅前"
                 className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 pl-9 text-sm placeholder-gray-400 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60"
               />
             </div>
@@ -304,7 +304,7 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
               </svg>
-              Add Activity
+              追加
             </Button>
           </div>
         </form>
@@ -321,7 +321,7 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
       )}
       {error && (
         <Card className="border-rose-200 bg-rose-50 text-rose-700">
-          <p className="text-sm">Error: {error}</p>
+          <p className="text-sm">エラー: {error}</p>
         </Card>
       )}
 
@@ -341,8 +341,8 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
             </svg>
           </div>
           <div className="space-y-0.5">
-            <div className="text-sm font-medium text-gray-900">No activities yet</div>
-            <p className="text-xs text-gray-600">Use the form above to add.</p>
+            <div className="text-sm font-medium text-gray-900">アクティビティはまだありません</div>
+            <p className="text-xs text-gray-600">上のフォームから追加できます。</p>
           </div>
         </Card>
       ) : (
@@ -361,7 +361,7 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
                     href={`/trips/${encodeURIComponent(tripId)}/activities/${encodeURIComponent(a.id)}`}
                     className="text-xs text-gray-700 underline hover:text-gray-900"
                   >
-                    Details
+                    詳細
                   </Link>
                 </div>
               </div>
@@ -369,7 +369,7 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
                 onClick={() => removeActivity(a.id)}
                 variant="danger"
                 size="sm"
-                aria-label={`Delete ${a.title}`}
+                aria-label={`「${a.title}」を削除`}
                 className="gap-0.5 px-1.5 py-0.5 text-[11px] leading-tight"
               >
                 <svg
@@ -383,7 +383,7 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 7h12M10 11v6m4-6v6M9 7l1-2h4l1 2m-9 0l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12" />
                 </svg>
-                Delete
+                削除
               </Button>
             </li>
           ))}

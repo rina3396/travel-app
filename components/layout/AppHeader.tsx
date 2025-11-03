@@ -29,7 +29,7 @@ export default function AppHeader() {
   ].join(' ')
 
   return (
-    <header className="w-full border-b bg-white/95 supports-backdrop-blur:backdrop-blur">
+    <header className="sticky top-0 z-50 w-full border-b bg-white/95 supports-backdrop-blur:backdrop-blur">
       <div className="mx-auto flex max-w-screen-lg items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
           <Link
@@ -77,4 +77,3 @@ export default function AppHeader() {
     </header>
   )
 }
-

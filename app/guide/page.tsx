@@ -25,7 +25,7 @@ export default function GuidePage() {
       <Card title="旅の一覧" description="作成済みの旅を確認できます。">
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-700">旅の一覧を開く</div>
-          <Button href="/trips" variant="outline">旅一覧</Button>
+          <Button href="/trips" variant="outline">旅の一覧</Button>
         </div>
       </Card>
 
