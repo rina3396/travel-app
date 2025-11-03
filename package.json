@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:dev": "node -e \"fetch('http://localhost:3000/api/admin/dev-seed',{method:'POST',headers:{'Content-Type':'application/json','x-admin-secret':process.env.ADMIN_ENDPOINT_SECRET||''},body:JSON.stringify({baseDate:new Date().toISOString().slice(0,10)})}).then(r=>r.text()).then(t=>console.log(t)).catch(e=>{console.error(e);process.exit(1)})\""
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",

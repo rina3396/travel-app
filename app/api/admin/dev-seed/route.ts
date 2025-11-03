@@ -3,8 +3,13 @@
 // 注意: 本番では絶対に有効化しないこと。ロールキー必須。
 import { NextResponse } from "next/server"
 import { createAdmin } from "@/lib/supabase/admin"
+import { adminGuard } from "@/lib/server/adminGuard"
+
+export const runtime = 'nodejs'
 
 export async function POST(req: Request) {
+  const guard = adminGuard(req)
+  if (guard) return guard
   try {
     const admin = createAdmin()
     const body = await req.json().catch(() => ({} as any))

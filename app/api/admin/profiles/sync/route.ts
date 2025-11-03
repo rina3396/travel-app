@@ -2,8 +2,13 @@
 // auth.users → public.profiles を同期（display_name はメールローカル部を初期値）
 import { NextResponse } from "next/server"
 import { createAdmin } from "@/lib/supabase/admin"
+import { adminGuard } from "@/lib/server/adminGuard"
 
-export async function POST() {
+export const runtime = 'nodejs'
+
+export async function POST(req: Request) {
+  const guard = adminGuard(req)
+  if (guard) return guard
   try {
     const admin = createAdmin()
     // ページング（最大1,000件までの簡易版）
