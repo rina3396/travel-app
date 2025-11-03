@@ -79,9 +79,7 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
     setError(null)
     try {
       setLoading(true)
-      const lu = await fetch('/api/admin/users/lookup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) })
-      if (!lu.ok) throw new Error(await lu.text())
-      const { id } = await lu.json()
+      throw new Error('管理APIが無効化されているため、メール検索は利用できません。ユーザーIDを直接指定する方式に切り替えるか、この機能を無効化してください。')
       if (members.some(m => m.user_id === id)) { setError("既に登録されています"); setLoading(false); return }
       const { error: insErr } = await supabase.from("trip_members").insert({ trip_id: tripId, user_id: id, role: newRole })
       if (insErr) throw new Error(insErr.message)

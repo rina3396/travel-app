@@ -77,9 +77,6 @@
 ### 2.4 API Routes（Route Handlers）
 
 - 管理/運用系
-  - `app/api/admin/users/lookup/route.ts` — メールからユーザー ID を引く内部 API
-  - `app/api/admin/dev-seed/route.ts` — 開発用シード投入
-  - `app/api/admin/profiles/sync/route.ts` — プロファイル同期等
 - 旅行リソース系
   - `app/api/trips/new/route.ts` — POST: 旅行作成
   - `app/api/trips/[tripId]/index/route.ts` — GET: 基本情報
@@ -205,7 +202,6 @@ RLS 前提のため、常に「ログインユーザーがアクセス権を持�
 - `GET/POST /api/trips/[tripId]/budget/expenses`
   - GET res: `DbExpense[]`
   - POST body: `{ date, title, category, amount, paidBy, splitWith[] }`
-- 管理系 `POST /api/admin/users/lookup`
   - body: `{ email: string }` → res: `{ id: string }`
 
 ---

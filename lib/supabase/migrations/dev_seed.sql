@@ -6,9 +6,7 @@ BEGIN;
 
 -- 1) プロファイル
 INSERT INTO public.profiles (id, display_name)
-VALUES
-  (:USER_1, 'Dev Owner'),
-  (:USER_2, 'Dev Editor')
+VALUES (:USER_1, 'Test User')
 ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name;
 
 -- 2) トリップ
@@ -17,8 +15,7 @@ VALUES (:USER_1, 'サンプルトリップ', CURRENT_DATE, CURRENT_DATE + INTERV
 RETURNING id INTO TEMP TABLE _trip(id);
 
 -- 3) メンバー
-INSERT INTO public.trip_members (trip_id, user_id, role)
-SELECT id, :USER_2, 'editor'::public.member_role FROM _trip;
+-- (single-user scenario: no additional trip_members)
 
 -- 4) 日付（3日分）
 INSERT INTO public.trip_days (trip_id, date)
@@ -35,7 +32,7 @@ ON CONFLICT (trip_id) DO UPDATE SET amount = EXCLUDED.amount, currency = EXCLUDE
 
 -- 6) 費用
 INSERT INTO public.expenses (trip_id, date, title, category, amount, paid_by, split_with)
-SELECT id, CURRENT_DATE, '朝食', 'meal', 800, :USER_1, ARRAY[:USER_1, :USER_2] FROM _trip;
+SELECT id, CURRENT_DATE, '朝食', 'meal', 800, :USER_1, ARRAY[:USER_1] FROM _trip;
 
 -- 7) アクティビティ（各日1件）
 WITH d AS (
@@ -51,4 +48,5 @@ ORDER BY d.date;
 DROP TABLE IF EXISTS _trip;
 
 COMMIT;
+
 
