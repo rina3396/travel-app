@@ -12,7 +12,7 @@ export default function AppFooter() {
   return (
     <footer className="mt-8">
       <div className="mx-auto flex max-w-screen-md items-center justify-between px-4 py-4 text-sm text-gray-500">
-        <div>{showBack ? <BackButton /> : <span />}</div>
+        <div>{showBack ? <BackButton className="sm:hidden" href="/trips" /> : <span />}</div>
         {/* <div>© {year} りょこうアプリ</div> */}
       </div>
     </footer>

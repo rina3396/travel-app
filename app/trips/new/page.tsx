@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
@@ -127,7 +127,7 @@ export default function TripNewPage() {
   }
 
   const StepHeader = () => (
-    <ol className="flex flex-wrap items-center gap-2 text-xs text-gray-600">
+    <ol className="flex flex-wrap items-center gap-3 text-sm sm:text-base text-gray-600">
       {[
         { n: 0, label: "タイトル" },
         { n: 1, label: "日付" },
@@ -138,7 +138,7 @@ export default function TripNewPage() {
         { n: 6, label: "完了" },
       ].map(({ n, label }) => (
         <li key={n} className={`flex items-center gap-1 ${step === n ? "font-semibold text-gray-900" : ""}`}>
-          <span className={`inline-flex h-5 w-5 items-center justify-center rounded-full border ${step >= n ? "bg-orange-500 text-white border-orange-500" : "bg-white"}`}>
+          <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full border ${step >= n ? "bg-orange-500 text-white border-orange-500" : "bg-white"}`}>
             {n + 1}
           </span>
           <span>{label}</span>
@@ -149,7 +149,7 @@ export default function TripNewPage() {
   )
 
   return (
-    <section className="p-4 max-w-lg mx-auto space-y-5">
+    <section className="p-4 sm:p-6 pb-24 sm:pb-6 max-w-xl mx-auto space-y-6 sm:space-y-7 text-base">
       <h1 className="text-lg font-semibold">旅の新規作成（ウィザード）</h1>
       <StepHeader />
 
@@ -158,10 +158,10 @@ export default function TripNewPage() {
           <div className="space-y-3">
             <label className="flex flex-col gap-2 text-sm">
               <span className="font-medium">タイトル</span>
-              <input type="text" placeholder="例）夏の温泉旅行" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm placeholder-gray-400 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60" required />
+              <input type="text" placeholder="例）夏の温泉旅行" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-base placeholder-gray-400 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60" required />
             </label>
             <div className="flex items-center justify-end gap-2">
-              <Button onClick={goNext}>次へ</Button>
+              <Button size="md" onClick={goNext}>次へ</Button>
             </div>
           </div>
         </Card>
@@ -173,16 +173,16 @@ export default function TripNewPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label className="flex flex-col gap-2 text-sm">
                 <span className="font-medium">開始日</span>
-                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60" />
+                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-base focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60" />
               </label>
               <label className="flex flex-col gap-2 text-sm">
                 <span className="font-medium">終了日</span>
-                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60" />
+                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} min={startDate || undefined} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-base focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60" />
               </label>
             </div>
             <div className="flex items-center justify-between gap-2">
-              <Button onClick={goPrev} variant="outline">戻る</Button>
-              <Button onClick={goNext}>次へ</Button>
+              <Button size="md" onClick={goPrev} variant="outline">戻る</Button>
+              <Button size="md" onClick={goNext}>次へ</Button>
             </div>
           </div>
         </Card>
@@ -194,8 +194,8 @@ export default function TripNewPage() {
             <label className="flex flex-col gap-2">
               <span className="font-medium">参加者メール</span>
               <div className="grid grid-cols-[1fr_auto] items-center gap-2">
-                <input type="email" placeholder="you@example.com" value={participantInput} onChange={(e) => setParticipantInput(e.target.value)} className="h-10 w-full rounded-lg border border-gray-200 px-3 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60" />
-                <Button onClick={addParticipant} type="button" variant="outline" size="sm" className="h-10 px-3">追加</Button>
+                <input type="email" placeholder="you@example.com" value={participantInput} onChange={(e) => setParticipantInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addParticipant() } }} className="h-10 w-full rounded-lg border border-gray-200 px-3 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60" />
+                <Button onClick={addParticipant} type="button" variant="outline"  className="h-10 px-3">追加</Button>
               </div>
             </label>
             {!!participants.length && (
@@ -209,8 +209,8 @@ export default function TripNewPage() {
               </ul>
             )}
             <div className="flex items-center justify-between gap-2">
-              <Button onClick={goPrev} variant="outline">戻る</Button>
-              <Button onClick={goNext}>次へ</Button>
+              <Button size="md" onClick={goPrev} variant="outline">戻る</Button>
+              <Button size="md" onClick={goNext}>次へ</Button>
             </div>
           </div>
         </Card>
@@ -222,7 +222,7 @@ export default function TripNewPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <label className="flex flex-col gap-2 sm:col-span-2">
                 <span className="font-medium">予算</span>
-                <input type="number" min={0} step={100} value={budget} onChange={(e) => setBudget(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60" placeholder="例）30000" />
+                <input type="number" min={0} step={100} value={budget} onChange={(e) => setBudget(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-base focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60" placeholder="例）30000" />
               </label>
               <label className="flex flex-col gap-2">
                 <span className="font-medium">通貨</span>
@@ -234,8 +234,8 @@ export default function TripNewPage() {
               </label>
             </div>
             <div className="flex items-center justify-between gap-2">
-              <Button onClick={goPrev} variant="outline">戻る</Button>
-              <Button onClick={goNext}>次へ</Button>
+              <Button size="md" onClick={goPrev} variant="outline">戻る</Button>
+              <Button size="md" onClick={goNext}>次へ</Button>
             </div>
           </div>
         </Card>
@@ -249,8 +249,8 @@ export default function TripNewPage() {
               <span>リンク共有を有効にする</span>
             </label>
             <div className="flex items-center justify-between gap-2">
-              <Button onClick={goPrev} variant="outline">戻る</Button>
-              <Button onClick={goNext}>次へ</Button>
+              <Button size="md" onClick={goPrev} variant="outline">戻る</Button>
+              <Button size="md" onClick={goNext}>次へ</Button>
             </div>
           </div>
         </Card>
@@ -286,8 +286,8 @@ export default function TripNewPage() {
               </div>
             </dl>
             <div className="flex items-center justify-between gap-2 pt-2">
-              <Button onClick={goPrev} variant="outline">戻る</Button>
-              <Button onClick={submitCreate} disabled={loading}>{loading ? "作成中…" : "作成する"}</Button>
+              <Button size="md" onClick={goPrev} variant="outline">戻る</Button>
+              <Button size="md" onClick={submitCreate} disabled={loading}>{loading ? "作成中…" : "作成する"}</Button>
             </div>
           </div>
         </Card>
@@ -324,6 +324,36 @@ export default function TripNewPage() {
       {error && (
         <Card className="border-rose-200 bg-rose-50 text-rose-700"><p className="text-sm">{error}</p></Card>
       )}
+
+      {(step >= 0 && step <= 5) && (
+        <div
+          className="sm:hidden fixed inset-x-0 bottom-0 z-40 border-t bg-white/95 supports-backdrop-blur:backdrop-blur"
+          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 4px)' }}
+        >
+          <div className="mx-auto max-w-lg px-4 py-2 flex items-center justify-between gap-2">
+            <Button size="md" onClick={goPrev} variant="outline" disabled={step === 0}>戻る</Button>
+            {step < 5 ? (
+              <Button size="md" onClick={goNext} disabled={loading}>次へ</Button>
+            ) : (
+              <Button size="md" onClick={submitCreate} disabled={loading}>{loading ? '作成中…' : '作成する'}</Button>
+            )}
+          </div>
+        </div>
+      )}
     </section>
   )
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

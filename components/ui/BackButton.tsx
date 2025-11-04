@@ -5,21 +5,34 @@ import { useRouter } from 'next/navigation'
 type Props = {
   className?: string
   label?: string
+  href?: string // フォールバック先（履歴が無い場合）
 }
 
-export default function BackButton({ className = '', label = '戻る' }: Props) {
+export default function BackButton({ className = '', label = '戻る', href }: Props) {
   const router = useRouter()
+  const handleClick = () => {
+    if (typeof window !== 'undefined') {
+      const hasHistory = window.history.length > 1
+      const ref = document.referrer || ''
+      const sameOrigin = ref && ref.startsWith(window.location.origin)
+      if (hasHistory && sameOrigin) {
+        router.back()
+        return
+      }
+    }
+    router.push(href || '/trips')
+  }
   return (
     <button
       type="button"
-      onClick={() => router.back()}
+      onClick={handleClick}
       className={[
         'group inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm font-medium',
         // outline base
         'border-orange-500 bg-white text-orange-700',
         // motion + focus
-        'transition ease-out duration-200 motion-reduce:transition-none',
-        'shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm active:scale-[0.98] motion-reduce:transform-none',
+        'transition-colors ease-out duration-200 motion-reduce:transition-none',
+        'shadow-sm hover:shadow-md active:shadow-sm',
         // hover invert (no double border)
         'hover:bg-orange-500 hover:text-white hover:border-transparent active:bg-orange-600',
         'focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1',
