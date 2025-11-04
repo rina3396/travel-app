@@ -7,7 +7,8 @@ import Card from "@/components/ui/Card"
 import Chip from "@/components/ui/Chip"
 import Skeleton from "@/components/ui/Skeleton"
 
-type DbTaskRow = { id: string; trip_id: string; title: string; kind?: "todo" | "packing"; done?: boolean; created_at?: string }\nfunction toTask(x: DbTaskRow): Task {
+type DbTaskRow = { id: string; trip_id: string; title: string; kind?: "todo" | "packing"; done?: boolean; created_at?: string }
+function toTask(x: DbTaskRow): Task {
   return {
     id: x.id,
     tripId: x.trip_id,
@@ -193,3 +194,8 @@ export default function TripTasksPage({ params }: { params: Promise<{ tripId: st
     </section>
   )
 }
+
+
+
+
+
