@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createBrowserClient } from "@supabase/ssr"
+import type { CreateTripRequest } from "@/types/trips"
 import Card from "@/components/ui/Card"
 import Button from "@/components/ui/Button"
 
@@ -100,12 +101,14 @@ export default function TripNewPage() {
       const token = session?.access_token
       if (!token) { setError("未ログインです。先にログインしてください"); setLoading(false); return }
 
-      const payload: any = { title: title.trim() }
-      if (startDate) payload.startDate = startDate
-      if (endDate) payload.endDate = endDate
-      if (participants.length) payload.participants = participants
-      if (budget) payload.budget = { amount: Number(budget), currency }
-      if (isPublic) payload.share = { public: true }
+      const payload: CreateTripRequest = {
+        title: title.trim(),
+        startDate: startDate || null,
+        endDate: endDate || null,
+        participants: participants.length ? participants : undefined,
+        budget: budget ? { amount: Number(budget), currency } : undefined,
+        share: isPublic ? { public: true } : undefined,
+      }
 
       const res = await fetch("/api/trips/new", {
         method: "POST",

@@ -136,8 +136,8 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
       setTitle("")
       setStartTime("")
       setLocation("")
-    } catch (e: any) {
-      setError(e?.message ?? "Failed to add activity")
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Failed to add activity")
     } finally {
       setLoading(false)
     }
@@ -166,10 +166,10 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
       })
       if (!res.ok) throw new Error(await res.text())
       const ref = await fetch(`/api/trips/${encodeURIComponent(tripId)}/activities`, { cache: "no-store" })
-      const data = await ref.json()
-      setItems((data as any[]).map(toActivity))
-    } catch (e: any) {
-      setError(e?.message ?? "Failed to migrate items")
+      const data: unknown = await ref.json()
+      setItems(Array.isArray(data) ? (data as DbActivity[]).map(toActivity) : [])
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Failed to migrate items")
     } finally {
       setLoading(false)
     }

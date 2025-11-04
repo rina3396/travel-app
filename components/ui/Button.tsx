@@ -1,4 +1,4 @@
-import Link from "next/link"
+﻿import Link from "next/link"
 import type { ReactNode, ButtonHTMLAttributes, AnchorHTMLAttributes } from "react"
 
 type Variant = "primary" | "outline" | "danger" | "ghost"
@@ -48,7 +48,7 @@ export default function Button(props: ButtonProps | LinkProps) {
   const cls = [base, variants[variant], sizes[size], className].filter(Boolean).join(" ")
 
   if ("href" in props && props.href) {
-    const { href, children: _c, variant: _v, size: _s, className: _cn, ...aRest } = props
+    const { href, ...aRest } = props
     return (
       <Link href={href} className={cls} {...aRest}>
         {children}
@@ -56,10 +56,11 @@ export default function Button(props: ButtonProps | LinkProps) {
     )
   }
 
-  const { children: _c2, variant: _v2, size: _s2, className: _cn2, ...btnRest } = props
+  const { ...btnRest } = props
   return (
     <button className={cls} {...btnRest}>
       {children}
     </button>
   )
 }
+

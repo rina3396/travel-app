@@ -10,9 +10,9 @@ import type { Participant, Expense, DbExpense } from "@/types/trips"
 export default function BudgetPage({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = usePromise(params)
 
-  const [members, setMembers] = useState<Participant[]>([])
+  const [_members, _setMembers] = useState<Participant[]>([])
   const [items, setItems] = useState<Expense[]>([])
-  const [budget, setBudget] = useState<{ amount: number; currency: string } | null>(null)
+  const [_budget, _setBudget] = useState<{ amount: number; currency: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -27,7 +27,7 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
       try {
         setLoading(true)
         setError(null)
-        const mRes = await fetch(`/api/trips/${encodeURIComponent(tripId)}/index`, { cache: "no-store" })
+        const _mRes = await fetch(`/api/trips/${encodeURIComponent(tripId)}/index`, { cache: "no-store" })
         // メンバーは簡易に tripId の文字列IDをそのまま名前にしています（実運用は別テーブルをJOIN推奨）
         const ms = await fetch(`/api/trips/${encodeURIComponent(tripId)}/budget/expenses`, { cache: "no-store" })
         if (!ms.ok) throw new Error(await ms.text())
@@ -206,4 +206,5 @@ function labelOfCategory(cat: Expense["category"]) {
 function formatJPY(v: number) {
   return new Intl.NumberFormat("ja-JP").format(Math.round(v))
 }
+
 
