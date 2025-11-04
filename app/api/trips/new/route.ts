@@ -1,5 +1,5 @@
 // app/api/trips/new/route.ts
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { createServer } from "@/lib/supabase/server"
 
 type WizardPayload = {
@@ -13,7 +13,7 @@ type WizardPayload = {
   share?: { public?: boolean }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   const { supabase, applyPendingCookies } = await createServer()
 
   const authHeader = req.headers.get("authorization") ?? ""
@@ -65,8 +65,10 @@ export async function POST(req: Request) {
   if (participants.length > 0) {
     try {
       const admin = (await import("@/lib/supabase/admin")).createAdmin()
-      const lookups = await Promise.all(participants.map((email) => admin.auth.admin.getUserByEmail(email)))
-      const userIds = lookups.map(r => r.data?.user?.id).filter(Boolean) as string[]
+      const listed = await admin.auth.admin.listUsers()
+      const userIds = (listed.data?.users ?? [])
+        .filter(u => participants.includes((u.email ?? "").toLowerCase()))
+        .map(u => u.id)
       if (userIds.length > 0) {
         const rows = userIds.map((uid) => ({ trip_id: tripId, user_id: uid, role: "viewer" as const }))
         await supabase.from("trip_members").insert(rows)

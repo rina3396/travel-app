@@ -12,6 +12,9 @@ import Skeleton from "@/components/ui/Skeleton"
 type Member = DbMember
 type ShareLink = DbShareLink
 
+// NOTE: placeholder to avoid unresolved identifier in disabled code paths
+const id: string = ""
+
 export default function TripSharePage({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = usePromise(params)
   const supabase = useMemo(() => createClientBrowser(), [])
@@ -83,9 +86,9 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
       throw new Error('管理APIが無効化されているため、メール検索は利用できません。ユーザーIDを直接指定する方式に切り替えるか、この機能を無効化してください。')
       if (members.some(m => m.user_id === id)) { setError("既に登録されています"); setLoading(false); return }
       const { error: insErr } = await supabase.from("trip_members").insert({ trip_id: tripId, user_id: id, role: newRole })
-      if (insErr) throw new Error(insErr.message)
+      if (insErr) throw new Error(String((insErr as { message?: string } | null)?.message ?? ""))
       const { data: mData, error: mErr } = await supabase.from("trip_members").select("user_id, role").eq("trip_id", tripId)
-      if (mErr) throw new Error(mErr.message)
+      if (mErr) throw new Error(String((mErr as { message?: string } | null)?.message ?? ""))
       setMembers(mData ?? [])
       setNewEmail("")
       setNewRole("viewer")

@@ -191,20 +191,25 @@ export type DbTripDetail = {
 
 export type DbActivity = {
   id: UUID
+  trip_id: UUID
   title: string
   start_time: string | null
   end_time: string | null
   location: string | null
+  note: string | null
   day_id?: UUID | null
+  order_no?: number | null
 }
 
 export type DbExpense = {
   id: UUID
+  trip_id: UUID
   date: ISODate
   title: string
   category: string | null
   amount: number
   paid_by: UUID | null
+  split_with?: string[] | null
 }
 
 export type DbTask = {

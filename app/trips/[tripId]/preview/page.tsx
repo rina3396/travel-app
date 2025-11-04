@@ -21,7 +21,7 @@ export default async function TripPreviewPage({ params }: { params: { tripId: st
   try {
     const { data, error } = await supabase
       .from("activities")
-      .select("id, title, start_time, end_time, location, day_id")
+      .select("id, trip_id, title, start_time, end_time, location, day_id, note, order_no")
       .eq("trip_id", tripId)
     if (!error && data) activities = data
   } catch {

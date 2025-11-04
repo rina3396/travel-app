@@ -56,7 +56,7 @@ export default function Button(props: ButtonProps | LinkProps) {
     )
   }
 
-  const { ...btnRest } = props
+  const { variant: _v, size: _s, className: _cn, ...btnRest } = props as ButtonProps
   return (
     <button className={cls} {...btnRest}>
       {children}

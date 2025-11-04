@@ -187,7 +187,7 @@ function toExpense(r: DbExpense): Expense {
     title: r.title,
     category: (r.category ?? undefined) as Expense["category"] | undefined,
     amount: r.amount,
-    paidBy: r.paid_by,
+    paidBy: r.paid_by ?? "",
     splitWith: r.split_with ?? [],
   }
 }
