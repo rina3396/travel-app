@@ -19,7 +19,7 @@ export default function LoginPage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (mounted && session) router.replace("/trips")
     })()
-    const { data: sub } = supabase.auth.onAuthStateChange((_evt, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_evt: unknown, session: unknown) => {
       if (session) router.replace("/trips")
     })
     return () => { mounted = false; sub.subscription.unsubscribe() }
@@ -90,4 +90,3 @@ export default function LoginPage() {
     </section>
   )
 }
-
