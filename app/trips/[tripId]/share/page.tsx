@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useMemo, useState, use as usePromise } from "react"
 import { createClientBrowser } from "@/lib/supabase/client"
@@ -45,11 +45,11 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
         ])
         if (!alive) return
         if (mErr) throw new Error(mErr.message)
-        if (lErr && (lErr as any).code !== "PGRST116") throw new Error(lErr.message)
+        if (lErr && (lErr as { code?: string }).code !== "PGRST116") throw new Error(lErr.message)
         setMembers(mData ?? [])
         setLink(lData ?? null)
-      } catch (e: any) {
-        setError(e?.message ?? "読み込みに失敗しました")
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "読み込みに失敗しました")
       } finally {
         setLoading(false)
       }
@@ -89,8 +89,8 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
       setMembers(mData ?? [])
       setNewEmail("")
       setNewRole("viewer")
-    } catch (e: any) {
-      setError(e?.message ?? "追加に失敗しました")
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "追加に失敗しました")
     } finally {
       setLoading(false)
     }
@@ -102,8 +102,8 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
       const { error: upErr } = await supabase.from("trip_members").update({ role }).eq("trip_id", tripId).eq("user_id", userId)
       if (upErr) throw new Error(upErr.message)
       setMembers(prev => prev.map(m => m.user_id === userId ? { ...m, role } : m))
-    } catch (e: any) {
-      setError(e?.message ?? "更新に失敗しました")
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "更新に失敗しました")
     }
   }
 
@@ -113,8 +113,8 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
       const { error: delErr } = await supabase.from("trip_members").delete().eq("trip_id", tripId).eq("user_id", userId)
       if (delErr) throw new Error(delErr.message)
       setMembers(prev => prev.filter(m => m.user_id !== userId))
-    } catch (e: any) {
-      setError(e?.message ?? "削除に失敗しました")
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "削除に失敗しました")
     }
   }
 
@@ -146,7 +146,7 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
           <div className="text-sm font-medium">メンバーの追加</div>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="user@example.com" className="w-full rounded-xl border px-3 py-2 text-sm" required />
-            <select value={newRole} onChange={(e) => setNewRole(e.target.value as any)} className="rounded-xl border bg-white px-3 py-2 text-sm">
+            <select value={newRole} onChange={(e) => setNewRole(e.target.value as "viewer" | "editor")} className="rounded-xl border bg-white px-3 py-2 text-sm">
               <option value="viewer">viewer（閲覧）</option>
               <option value="editor">editor（編集）</option>
             </select>
@@ -177,7 +177,7 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
                   <div className="truncate font-medium">{m.user_id}</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <select value={m.role ?? "viewer"} onChange={(e) => updateRole(m.user_id, e.target.value as any)} className="rounded-lg border bg-white px-2 py-1 text-xs">
+                  <select value={m.role ?? "viewer"} onChange={(e) => updateRole(m.user_id, e.target.value as "viewer" | "editor")} className="rounded-lg border bg-white px-2 py-1 text-xs">
                     <option value="viewer">viewer</option>
                     <option value="editor">editor</option>
                   </select>
@@ -191,3 +191,4 @@ export default function TripSharePage({ params }: { params: Promise<{ tripId: st
     </section>
   )
 }
+

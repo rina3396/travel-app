@@ -1,7 +1,7 @@
 // app/trips/[tripId]/preview/page.tsx
 import Card from "@/components/ui/Card"
 import { createServer } from "@/lib/supabase/server"
-import type { DbTripSummary, DbActivity, DbExpense, DbTask } from "@/types/trips"
+import type { DbActivity, DbExpense, DbTask } from "@/types/trips"
 
 export default async function TripPreviewPage({ params }: { params: { tripId: string } }) {
   const { tripId } = params
@@ -34,7 +34,7 @@ export default async function TripPreviewPage({ params }: { params: { tripId: st
       .select("id, date")
       .eq("trip_id", tripId)
     if (!dayErr && days) {
-      dayMap = Object.fromEntries(days.map((d: any) => [d.id as string, d.date as string]))
+      dayMap = Object.fromEntries((days as { id: string; date: string }[]).map((d) => [d.id, d.date]))
     }
   } catch {
     dayMap = {}
@@ -47,7 +47,7 @@ export default async function TripPreviewPage({ params }: { params: { tripId: st
       .select("id, date, title, category, amount, paid_by")
       .eq("trip_id", tripId)
       .order("date", { ascending: true })
-    if (!error && data) expenses = data as any
+    if (!error && data) expenses = data as DbExpense[]
   } catch {
     expenses = []
   }
@@ -59,7 +59,7 @@ export default async function TripPreviewPage({ params }: { params: { tripId: st
       .select("id, title, kind, done")
       .eq("trip_id", tripId)
       .order("created_at", { ascending: true })
-    if (!error && data) tasks = data as any
+    if (!error && data) tasks = data as DbTask[]
   } catch {
     tasks = []
   }

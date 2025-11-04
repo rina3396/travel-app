@@ -15,7 +15,7 @@ type ButtonProps = CommonProps & ButtonHTMLAttributes<HTMLButtonElement> & { hre
 type LinkProps = CommonProps & AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }
 
 export default function Button(props: ButtonProps | LinkProps) {
-  const { children, variant = "primary", size = "md", className = "", ...rest } = props as any
+  const { children, variant = "primary", size = "md", className = "" } = props
 
   // Add subtle micro-interactions: lift on hover, press on active, shadow transition
   const base = [
@@ -48,16 +48,17 @@ export default function Button(props: ButtonProps | LinkProps) {
   const cls = [base, variants[variant], sizes[size], className].filter(Boolean).join(" ")
 
   if ("href" in props && props.href) {
-    const { href, ...aRest } = rest
+    const { href, children: _c, variant: _v, size: _s, className: _cn, ...aRest } = props
     return (
-      <Link href={props.href} className={cls} {...(aRest as any)}>
+      <Link href={href} className={cls} {...aRest}>
         {children}
       </Link>
     )
   }
 
+  const { children: _c2, variant: _v2, size: _s2, className: _cn2, ...btnRest } = props
   return (
-    <button className={cls} {...(rest as any)}>
+    <button className={cls} {...btnRest}>
       {children}
     </button>
   )

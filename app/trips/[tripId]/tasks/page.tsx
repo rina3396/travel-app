@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useMemo, useState, use as usePromise } from "react"
 import type { Task } from "@/types/trips"
@@ -7,7 +7,7 @@ import Card from "@/components/ui/Card"
 import Chip from "@/components/ui/Chip"
 import Skeleton from "@/components/ui/Skeleton"
 
-function toTask(x: any): Task {
+type DbTaskRow = { id: string; trip_id: string; title: string; kind?: "todo" | "packing"; done?: boolean; created_at?: string }\nfunction toTask(x: DbTaskRow): Task {
   return {
     id: x.id,
     tripId: x.trip_id,
@@ -37,10 +37,10 @@ export default function TripTasksPage({ params }: { params: Promise<{ tripId: st
         setError(null)
         const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}/tasks`, { cache: "no-store" })
         if (!res.ok) throw new Error(await res.text())
-        const data = await res.json()
-        if (!abort) setItems((data as any[]).map(toTask))
-      } catch (e: any) {
-        if (!abort) setError(e?.message ?? "読み込みに失敗しました")
+        const data: unknown = await res.json()
+        if (!abort) setItems(Array.isArray(data) ? (data as DbTaskRow[]).map(toTask) : [])
+      } catch (e: unknown) {
+        if (!abort) setError(e instanceof Error ? e.message : "読み込みに失敗しました")
       } finally {
         if (!abort) setLoading(false)
       }
@@ -67,12 +67,12 @@ export default function TripTasksPage({ params }: { params: Promise<{ tripId: st
       })
       if (!res.ok) throw new Error(await res.text())
       const ref = await fetch(`/api/trips/${encodeURIComponent(tripId)}/tasks`, { cache: "no-store" })
-      const data = await ref.json()
-      setItems((data as any[]).map(toTask))
+      const data: unknown = await ref.json()
+      setItems(Array.isArray(data) ? (data as DbTaskRow[]).map(toTask) : [])
       setTitle("")
       setKind("todo")
-    } catch (e: any) {
-      setError(e?.message ?? "追加に失敗しました")
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "追加に失敗しました")
     } finally {
       setLoading(false)
     }

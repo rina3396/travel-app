@@ -96,7 +96,7 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ tripI
                 <input
                   id="title"
                   value={item.title}
-                  onChange={(e) => setItem({ ...(item as any), title: e.target.value })}
+                  onChange={(e) => setItem((prev) => (prev ? { ...prev, title: e.target.value } : prev))}
                   placeholder="例: 美術館ツアー"
                   aria-describedby="title-help"
                   className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 pl-9 text-sm placeholder-gray-400 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60"
@@ -124,7 +124,7 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ tripI
                     id="start"
                     type="time"
                     value={item.start_time ?? ""}
-                    onChange={(e) => setItem({ ...(item as any), start_time: e.target.value })}
+                    onChange={(e) => setItem((prev) => (prev ? { ...prev, start_time: e.target.value } : prev))}
                     className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 pl-9 text-sm outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60"
                   />
                 </div>
@@ -147,7 +147,7 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ tripI
                     id="end"
                     type="time"
                     value={item.end_time ?? ""}
-                    onChange={(e) => setItem({ ...(item as any), end_time: e.target.value })}
+                    onChange={(e) => setItem((prev) => (prev ? { ...prev, end_time: e.target.value } : prev))}
                     className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 pl-9 text-sm outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60"
                   />
                 </div>
@@ -172,7 +172,7 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ tripI
                 <input
                   id="location"
                   value={item.location ?? ""}
-                  onChange={(e) => setItem({ ...(item as any), location: e.target.value })}
+                  onChange={(e) => setItem((prev) => (prev ? { ...prev, location: e.target.value } : prev))}
                   placeholder="例: 駅前広場"
                   aria-describedby="location-help"
                   className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 pl-9 text-sm placeholder-gray-400 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60"
@@ -198,7 +198,7 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ tripI
                 <textarea
                   id="note"
                   value={item.note ?? ""}
-                  onChange={(e) => setItem({ ...(item as any), note: e.target.value })}
+                  onChange={(e) => setItem((prev) => (prev ? { ...prev, note: e.target.value } : prev))}
                   placeholder="補足メモ"
                   aria-describedby="note-help"
                   className="min-h-[140px] w-full rounded-lg border border-gray-200 bg-white px-3 py-2 pl-9 text-sm placeholder-gray-400 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60"

@@ -1,11 +1,18 @@
 // app/api/trips/[tripId]/tasks/[taskId]/route.ts
 import { createServer } from "@/lib/supabase/server"
 
+type TaskUpdateBody = Partial<{
+  title: string
+  kind: 'todo' | 'packing'
+  done: boolean
+  sort_order: number
+}>
+
 export async function PATCH(req: Request, { params }: { params: { tripId: string; taskId: string } }) {
-  const body = await req.json().catch(() => ({} as any))
+  const body = (await req.json().catch(() => ({}))) as TaskUpdateBody
   const { supabase: s } = await createServer()
 
-  const updates: Record<string, any> = {}
+  const updates: Record<string, unknown> = {}
   if (typeof body.title === "string") updates.title = body.title
   if (typeof body.kind === "string") updates.kind = body.kind
   if (typeof body.done === "boolean") updates.done = body.done
@@ -34,4 +41,3 @@ export async function DELETE(_: Request, { params }: { params: { tripId: string;
   if (error) return new Response(error.message, { status: 400 })
   return new Response(null, { status: 204 })
 }
-

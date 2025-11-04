@@ -71,8 +71,9 @@ export async function POST(req: Request) {
         const rows = userIds.map((uid) => ({ trip_id: tripId, user_id: uid, role: "viewer" as const }))
         await supabase.from("trip_members").insert(rows)
       }
-    } catch (e: any) {
-      const res = NextResponse.json({ id: tripId, warning: `members: ${e?.message ?? 'lookup failed'}` }, { status: 201 })
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : String(e)
+      const res = NextResponse.json({ id: tripId, warning: `members: ${message || 'lookup failed'}` }, { status: 201 })
       applyPendingCookies?.(res)
       return res
     }
@@ -102,4 +103,3 @@ export async function POST(req: Request) {
   applyPendingCookies?.(res)
   return res
 }
-

@@ -6,10 +6,10 @@ import Link from "next/link"
 import Button from "@/components/ui/Button"
 import Card from "@/components/ui/Card"
 import Skeleton from "@/components/ui/Skeleton"
-import type { Activity } from "@/types/trips"
+import type { Activity, DbActivity } from "@/types/trips"
 
 // Map DB row to UI Activity
-function toActivity(x: any): Activity {
+function toActivity(x: DbActivity): Activity {
   return {
     id: x.id,
     tripId: x.trip_id,
@@ -46,10 +46,10 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
         setError(null)
         const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}/activities`, { cache: "no-store" })
         if (!res.ok) throw new Error(await res.text())
-        const data = await res.json()
-        if (!abort) setItems((data as any[]).map(toActivity))
-      } catch (e: any) {
-        if (!abort) setError(e?.message ?? "Failed to load activities")
+        const data: unknown = await res.json()
+        if (!abort) setItems(Array.isArray(data) ? (data as DbActivity[]).map(toActivity) : [])
+      } catch (e: unknown) {
+        if (!abort) setError(e instanceof Error ? e.message : "Failed to load activities")
       } finally {
         if (!abort) setLoading(false)
       }
@@ -64,10 +64,11 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
       try {
         const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}/index`, { cache: "no-store" })
         if (!res.ok) return
-        const d = await res.json()
+        const d: unknown = await res.json()
         if (!abort) {
-          setTripStart(d?.start_date ?? null)
-          setTripEnd(d?.end_date ?? null)
+          const dt = d as { start_date?: string | null; end_date?: string | null }
+          setTripStart(dt?.start_date ?? null)
+          setTripEnd(dt?.end_date ?? null)
         }
       } catch {}
     })()
@@ -82,13 +83,13 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
       try {
         const get = await fetch(`/api/trips/${encodeURIComponent(tripId)}/days/${targetDate}`, { cache: "no-store" })
         if (!get.ok) throw new Error(await get.text())
-        const info = await get.json()
+        const info: unknown = await get.json()
         if (abort) return
-        if (info.dayId) { setDayId(info.dayId); return }
+        if ((info as { dayId?: string }).dayId) { setDayId((info as { dayId?: string }).dayId!); return }
         const crt = await fetch(`/api/trips/${encodeURIComponent(tripId)}/days/${targetDate}`, { method: "POST" })
         if (!crt.ok) throw new Error(await crt.text())
-        const created = await crt.json()
-        if (!abort) setDayId(created.dayId)
+        const created: unknown = await crt.json()
+        if (!abort) setDayId((created as { dayId: string }).dayId)
       } catch {
         if (!abort) setDayId(null)
       }
@@ -130,8 +131,8 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
       if (!res.ok) throw new Error(await res.text())
       // refresh list
       const ref = await fetch(`/api/trips/${encodeURIComponent(tripId)}/activities`, { cache: "no-store" })
-      const data = await ref.json()
-      setItems((data as any[]).map(toActivity))
+      const data: unknown = await ref.json()
+      setItems(Array.isArray(data) ? (data as DbActivity[]).map(toActivity) : [])
       setTitle("")
       setStartTime("")
       setLocation("")

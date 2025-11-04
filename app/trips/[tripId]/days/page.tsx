@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useMemo, useState, use as usePromise } from "react"
 import type { DbTripDetail } from "@/types/trips"
@@ -26,8 +26,8 @@ export default function TripDaysSelectorPage({ params }: { params: Promise<{ tri
         if (!res.ok) throw new Error(await res.text())
         const data: TripDetail = await res.json()
         if (!abort) setTrip(data)
-      } catch (e: any) {
-        if (!abort) setError(e?.message ?? "旅行情報の取得に失敗しました")
+      } catch (e: unknown) {
+        if (!abort) setError(e instanceof Error ? e.message : "旅行情報の取得に失敗しました")
       } finally {
         if (!abort) setLoading(false)
       }
@@ -100,3 +100,4 @@ export default function TripDaysSelectorPage({ params }: { params: Promise<{ tri
 function formatISODate(d: Date) {
   return new Date(d).toISOString().slice(0, 10)
 }
+

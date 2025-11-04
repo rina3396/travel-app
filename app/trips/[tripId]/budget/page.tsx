@@ -1,11 +1,11 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useMemo, useState, use as usePromise } from "react"
 import Link from "next/link"
 import Button from "@/components/ui/Button"
 import Card from "@/components/ui/Card"
 import Skeleton from "@/components/ui/Skeleton"
-import type { Participant, Expense } from "@/types/trips"
+import type { Participant, Expense, DbExpense } from "@/types/trips"
 
 export default function BudgetPage({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = usePromise(params)
@@ -34,11 +34,11 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
         const expRows = await ms.json()
         const mem: Participant[] = []
         setMembers(mem)
-        setItems((expRows as any[]).map(toExpense))
+        setItems(Array.isArray(expRows) ? (expRows as DbExpense[]).map(toExpense) : [])
         setPaidBy(mem[0]?.id ?? "")
-      } catch (e: any) {
+      } catch (e: unknown) {
         if (!alive) return
-        setError(e?.message ?? "読み込みに失敗しました")
+        setError(e instanceof Error ? e.message : "読み込みに失敗しました")
       } finally {
         if (alive) setLoading(false)
       }
@@ -70,12 +70,12 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
       if (!res.ok) throw new Error(await res.text())
       const ref = await fetch(`/api/trips/${encodeURIComponent(tripId)}/budget/expenses`, { cache: "no-store" })
       const latest = await ref.json()
-      setItems((latest as any[]).map(toExpense))
+      setItems(Array.isArray(latest) ? (latest as DbExpense[]).map(toExpense) : [])
       setTitle("")
       setAmount("")
       setCategory("meal")
-    } catch (e: any) {
-      setError(e?.message ?? "追加に失敗しました")
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "追加に失敗しました")
     } finally {
       setLoading(false)
     }
@@ -180,7 +180,7 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
   )
 }
 
-function toExpense(r: any): Expense {
+function toExpense(r: DbExpense): Expense {
   return {
     id: r.id,
     tripId: r.trip_id,
@@ -206,3 +206,4 @@ function labelOfCategory(cat: Expense["category"]) {
 function formatJPY(v: number) {
   return new Intl.NumberFormat("ja-JP").format(Math.round(v))
 }
+

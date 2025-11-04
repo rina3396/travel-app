@@ -119,8 +119,8 @@ export default function TripNewPage() {
       const { id } = await res.json()
       setCreatedTripId(id)
       setStep(6)
-    } catch (e: any) {
-      setError(e?.message ?? "作成に失敗しました")
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "作成に失敗しました")
     } finally {
       setLoading(false)
     }
@@ -343,6 +343,8 @@ export default function TripNewPage() {
     </section>
   )
 }
+
+
 
 
 
