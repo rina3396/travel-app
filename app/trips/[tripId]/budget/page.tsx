@@ -33,8 +33,7 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
         if (!ms.ok) throw new Error(await ms.text())
         const expRows = await ms.json()
         const mem: Participant[] = []
-        setMembers(mem)
-        setItems(Array.isArray(expRows) ? (expRows as DbExpense[]).map(toExpense) : [])
+                setItems(Array.isArray(expRows) ? (expRows as DbExpense[]).map(toExpense) : [])
         setPaidBy(mem[0]?.id ?? "")
       } catch (e: unknown) {
         if (!alive) return
@@ -206,5 +205,6 @@ function labelOfCategory(cat: Expense["category"]) {
 function formatJPY(v: number) {
   return new Intl.NumberFormat("ja-JP").format(Math.round(v))
 }
+
 
 

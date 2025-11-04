@@ -101,7 +101,7 @@ export default function TripSettingsPage({ params }: { params: Promise<{ tripId:
                     const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}`, { method: 'DELETE' })
                     if (!res.ok) throw new Error(await res.text())
                     location.href = '/trips'
-                  } catch (_e) {
+                  } catch { 
                     alert('削除に失敗しました')
                   }
                 }}
@@ -115,5 +115,6 @@ export default function TripSettingsPage({ params }: { params: Promise<{ tripId:
     </section>
   )
 }
+
 
 

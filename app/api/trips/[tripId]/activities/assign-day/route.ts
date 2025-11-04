@@ -1,20 +1,22 @@
 // app/api/trips/[tripId]/activities/assign-day/route.ts
+import { NextRequest } from "next/server"
 import { createServer } from "@/lib/supabase/server"
 
-export async function POST(req: Request, { params }: { params: { tripId: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ tripId: string }> }) {
   const { supabase: s } = await createServer()
   const body: { date?: string } = await req.json().catch(() => ({}))
+  const { tripId } = await params
   if (!body.date) return new Response("date is required", { status: 400 })
 
   const day = await s
     .from("trip_days")
     .select("id")
-    .eq("trip_id", params.tripId)
+    .eq("trip_id", tripId)
     .eq("date", body.date)
     .maybeSingle()
   let dayId = day.data?.id as string | undefined
   if (!dayId) {
-    const created = await s.from("trip_days").insert({ trip_id: params.tripId, date: body.date }).select("id").single()
+    const created = await s.from("trip_days").insert({ trip_id: tripId, date: body.date }).select("id").single()
     if (created.error) return new Response(created.error.message, { status: 400 })
     dayId = created.data.id
   }
@@ -22,7 +24,7 @@ export async function POST(req: Request, { params }: { params: { tripId: string 
   const { data, error } = await s
     .from("activities")
     .update({ day_id: dayId })
-    .eq("trip_id", params.tripId)
+    .eq("trip_id", tripId)
     .is("day_id", null)
     .select("id")
 
