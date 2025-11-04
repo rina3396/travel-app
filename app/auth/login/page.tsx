@@ -4,9 +4,6 @@ import { FormEvent, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClientBrowser } from "@/lib/supabase/client"
 
-const SAMPLE_EMAIL = process.env.NEXT_PUBLIC_SAMPLE_EMAIL || ""
-const SAMPLE_PASSWORD = process.env.NEXT_PUBLIC_SAMPLE_PASSWORD || ""
-
 export default function LoginPage() {
   const router = useRouter()
   const supabase = useMemo(() => createClientBrowser(), [])
@@ -50,42 +47,6 @@ export default function LoginPage() {
     router.replace("/trips")
   }
 
-  const handleSampleLogin = async () => {
-    if (!SAMPLE_EMAIL || !SAMPLE_PASSWORD) {
-      setError("サンプル用のメールアドレスとパスワードが設定されていません。NEXT_PUBLIC_SAMPLE_EMAIL / NEXT_PUBLIC_SAMPLE_PASSWORD を設定してください。")
-      return
-    }
-    const normalizedEmail = SAMPLE_EMAIL.trim().toLowerCase()
-    try {
-      setEmail(normalizedEmail)
-      setPassword(SAMPLE_PASSWORD)
-      setLoading(true)
-      setError(null)
-      const resp = await fetch("/api/sample-user", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: normalizedEmail, password: SAMPLE_PASSWORD }),
-      })
-      if (!resp.ok) {
-        const data = await resp.json().catch(() => ({}))
-        throw new Error(data?.error || "サンプルユーザーの作成に失敗しました。")
-      }
-      const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password: SAMPLE_PASSWORD })
-      if (error) {
-        if (error.message === "Invalid login credentials") {
-          throw new Error("サンプルのメールアドレスまたはパスワードが正しくありません。")
-        }
-        throw new Error(`サンプルでのログインに失敗しました: ${error.message}`)
-      }
-    } catch (e: any) {
-      setError(e?.message ?? "サンプルでのログインに失敗しました。")
-      setLoading(false)
-      return
-    }
-    setLoading(false)
-    router.replace("/trips")
-  }
-
   return (
     <section className="mx-auto max-w-sm space-y-4 p-4 text-sm">
       <h1 className="text-lg font-semibold">ログイン</h1>
@@ -122,15 +83,6 @@ export default function LoginPage() {
             className="w-full rounded bg-orange-500 py-2 text-white disabled:opacity-50"
           >
             {loading ? "処理中…" : "ログイン"}
-          </button>
-          <button
-            type="button"
-            onClick={handleSampleLogin}
-            disabled={loading}
-            className="w-full rounded border py-2 disabled:opacity-50"
-            title="デモ用。個人情報は入力しないでください"
-          >
-            サンプルでログイン
           </button>
         </div>
       </form>
