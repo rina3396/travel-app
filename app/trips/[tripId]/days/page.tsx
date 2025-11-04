@@ -1,16 +1,12 @@
 "use client"
 
 import { useEffect, useMemo, useState, use as usePromise } from "react"
+import type { DbTripDetail } from "@/types/trips"
 import { useRouter } from "next/navigation"
 import Card from "@/components/ui/Card"
 import Skeleton from "@/components/ui/Skeleton"
 
-type TripDetail = {
-  id: string
-  title: string
-  start_date?: string | null
-  end_date?: string | null
-}
+type TripDetail = DbTripDetail
 
 export default function TripDaysSelectorPage({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = usePromise(params)

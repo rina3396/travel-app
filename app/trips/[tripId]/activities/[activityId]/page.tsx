@@ -2,18 +2,12 @@
 
 import { useEffect, useState, use as usePromise } from "react"
 import { useRouter } from "next/navigation"
+import type { DbActivity } from "@/types/trips"
 import Card from "@/components/ui/Card"
 import Button from "@/components/ui/Button"
 import Skeleton from "@/components/ui/Skeleton"
 
-type DbActivity = {
-  id: string
-  title: string
-  start_time?: string | null
-  end_time?: string | null
-  location?: string | null
-  note?: string | null
-}
+// use shared DbActivity type
 
 export default function ActivityDetailPage({ params }: { params: Promise<{ tripId: string; activityId: string }> }) {
   const { tripId, activityId } = usePromise(params)

@@ -1,14 +1,8 @@
 // app/trips/page.tsx
 import Link from "next/link"
 import Button from "@/components/ui/Button"
+import type { DbTripSummary } from "@/types/trips"
 import { createServer } from "@/lib/supabase/server"
-
-type Trip = {
-  id: string
-  title: string | null
-  start_date: string | null
-  end_date: string | null
-}
 
 export default async function TripsIndexPage() {
   const { supabase } = await createServer()
@@ -28,7 +22,7 @@ export default async function TripsIndexPage() {
     )
   }
 
-  const items: Trip[] = trips ?? []
+  const items: DbTripSummary[] = (trips ?? []) as DbTripSummary[]
 
   return (
     <section className="mx-auto w-full max-w-2xl space-y-6 p-4">

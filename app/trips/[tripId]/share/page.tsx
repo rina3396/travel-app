@@ -2,14 +2,15 @@
 
 import { useEffect, useMemo, useState, use as usePromise } from "react"
 import { createClientBrowser } from "@/lib/supabase/client"
+import type { DbMember, DbShareLink } from "@/types/trips"
 import Button from "@/components/ui/Button"
 import Card from "@/components/ui/Card"
 import Skeleton from "@/components/ui/Skeleton"
 
 
-type Member = { user_id: string; role: "viewer" | "editor" | "owner" | null }
-
-type ShareLink = { id: string; is_enabled: boolean; expires_at: string | null }
+// use shared Db types
+type Member = DbMember
+type ShareLink = DbShareLink
 
 export default function TripSharePage({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = usePromise(params)

@@ -170,6 +170,57 @@ export type CreateTaskRequest = {
 }
 
 export type UpdateTaskRequest = Partial<CreateTaskRequest> & {
-    done?: boolean
-    sortOrder?: number
+  done?: boolean
+  sortOrder?: number
+}
+
+// ===== DBスキーマに沿ったsnake_case型（画面の直接fetchでも使うことがあるため） =====
+export type DbTripSummary = {
+  id: UUID
+  title: string | null
+  start_date: ISODate | null
+  end_date: ISODate | null
+}
+
+export type DbTripDetail = {
+  id: UUID
+  title: string
+  start_date?: ISODate | null
+  end_date?: ISODate | null
+}
+
+export type DbActivity = {
+  id: UUID
+  title: string
+  start_time: string | null
+  end_time: string | null
+  location: string | null
+  day_id?: UUID | null
+}
+
+export type DbExpense = {
+  id: UUID
+  date: ISODate
+  title: string
+  category: string | null
+  amount: number
+  paid_by: UUID | null
+}
+
+export type DbTask = {
+  id: UUID
+  title: string
+  kind: 'todo' | 'packing'
+  done: boolean
+}
+
+export type DbShareLink = {
+  id: UUID
+  is_enabled: boolean
+  expires_at: ISODateTime | null
+}
+
+export type DbMember = {
+  user_id: UUID
+  role: 'viewer' | 'editor' | 'owner' | null
 }

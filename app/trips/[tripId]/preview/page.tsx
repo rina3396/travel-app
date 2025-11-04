@@ -1,38 +1,7 @@
 // app/trips/[tripId]/preview/page.tsx
 import Card from "@/components/ui/Card"
 import { createServer } from "@/lib/supabase/server"
-
-type Trip = {
-  id: string
-  title: string | null
-  start_date: string | null
-  end_date: string | null
-}
-
-type DbActivity = {
-  id: string
-  title: string
-  start_time: string | null
-  end_time: string | null
-  location: string | null
-  day_id?: string | null
-}
-
-type DbExpense = {
-  id: string
-  date: string
-  title: string
-  category: string | null
-  amount: number
-  paid_by: string | null
-}
-
-type DbTask = {
-  id: string
-  title: string
-  kind: 'todo' | 'packing'
-  done: boolean
-}
+import type { DbTripSummary, DbActivity, DbExpense, DbTask } from "@/types/trips"
 
 export default async function TripPreviewPage({ params }: { params: { tripId: string } }) {
   const { tripId } = params
