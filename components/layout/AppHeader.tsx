@@ -1,4 +1,4 @@
-﻿/* AppHeader */
+/* AppHeader */
 
 'use client'
 
@@ -13,11 +13,11 @@ export default function AppHeader() {
   const supabase = useMemo(() => createClientBrowser(), [])
   const [menuOpen, setMenuOpen] = useState(false)
 
-  // 認証配下ではヘッダー非表示
+  // 認証ページではヘッダー非表示
   if (pathname?.startsWith('/auth')) return null
 
   const handleLogout = async () => {
-    const ok = typeof window !== 'undefined' ? window.confirm('ログアウトしてもよろしいですか？') : true
+    const ok = typeof window !== 'undefined' ? window.confirm('ログアウトしますか？') : true
     if (!ok) return
     await supabase.auth.signOut()
     router.replace('/auth/login')
@@ -25,8 +25,11 @@ export default function AppHeader() {
 
   const linkBase = [
     'inline-flex items-center rounded-md border px-3 py-1.5 text-sm font-medium',
-    'transition-colors ease-out duration-200 motion-reduce:transition-none',
-    'shadow-sm hover:shadow-md',
+    // smoother interactions: color + transform + shadow
+    'transition ease-out duration-200 motion-reduce:transition-none',
+    'shadow-sm hover:shadow-lg',
+    'hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] motion-reduce:transform-none',
+    // focus ring
     'focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1',
   ].join(' ')
 
@@ -44,7 +47,7 @@ export default function AppHeader() {
   ].join(' ')
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-white/95 supports-backdrop-blur:backdrop-blur">
+    <header className="sticky top-0 z-50 w-full bg-white/70 backdrop-blur-md supports-backdrop-blur:backdrop-blur-md ring-1 ring-gray-900/5">
       <div className="mx-auto flex max-w-screen-lg items-center justify-between px-4 py-3">
         <div className="flex items-center gap-3">
           <Link
@@ -52,7 +55,7 @@ export default function AppHeader() {
             className="group inline-flex items-center gap-2 font-bold text-gray-900 transition-colors ease-out duration-200"
             title="ホーム"
           >
-            <span className="inline-block translate-y-[0.5px]">✈️</span>
+            <span className="inline-block translate-y-[0.5px]">🏝️</span>
             <span>Travel App</span>
           </Link>
         </div>
@@ -76,10 +79,10 @@ export default function AppHeader() {
             className={[navClass('/guide'), 'mr-6 sm:mr-8'].join(' ')}
             href="/guide"
             aria-current={isActive('/guide') ? 'page' : undefined}
-            aria-label="使い方"
-            title="使い方"
+            aria-label="ガイド"
+            title="ガイド"
           >
-            使い方
+            ガイド
           </Link>
           <Link
             className={navClass('/trips/new')}
@@ -95,14 +98,25 @@ export default function AppHeader() {
           >
             旅の一覧
           </Link>
-          <button
-            onClick={handleLogout}
-            className={[linkBase, 'border-red-600 bg-red-600 text-white hover:bg-red-700'].join(' ')}
-            title="サインアウトしてログイン画面へ戻ります"
-            type="button"
-          >
-            ログアウト
-          </button>
+          {pathname === '/' && (
+            <Link
+              href="/auth/login"
+              className={[linkBase, 'border-gray-900 bg-gray-900 text-white hover:bg-black focus:ring-gray-900'].join(' ')}
+              title="ログイン"
+            >
+              ログイン
+            </Link>
+          )}
+          {pathname !== '/' && (
+            <button
+              onClick={handleLogout}
+              className={[linkBase, 'border-gray-900 bg-gray-900 text-white hover:bg-black focus:ring-gray-900'].join(' ')}
+              title="サインアウト"
+              type="button"
+            >
+              ログアウト
+            </button>
+          )}
         </nav>
       </div>
       {/* Mobile dropdown nav */}
@@ -119,13 +133,24 @@ export default function AppHeader() {
               <Link className={navClass('/trips')} href="/trips" onClick={() => setMenuOpen(false)}>
                 旅の一覧
               </Link>
-              <button
-                onClick={async () => { await handleLogout(); setMenuOpen(false) }}
-                className={[linkBase, 'border-red-600 bg-red-600 text-white hover:bg-red-700'].join(' ')}
-                type="button"
-              >
-                ログアウト
-              </button>
+              {pathname === '/' && (
+                <Link
+                  href="/auth/login"
+                  className={[linkBase, 'border-gray-900 bg-gray-900 text-white hover:bg-black focus:ring-gray-900'].join(' ')}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  ログイン
+                </Link>
+              )}
+              {pathname !== '/' && (
+                <button
+                  onClick={async () => { await handleLogout(); setMenuOpen(false) }}
+                  className={[linkBase, 'border-gray-900 bg-gray-900 text-white hover:bg-black focus:ring-gray-900'].join(' ')}
+                  type="button"
+                >
+                  ログアウト
+                </button>
+              )}
             </div>
           </div>
         </div>

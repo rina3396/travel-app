@@ -1,4 +1,4 @@
-﻿// app/layout.tsx
+// app/layout.tsx
 import "@/styles/globals.css"
 import type { Metadata } from "next"
 import AppHeader from "@/components/layout/AppHeader"
@@ -26,9 +26,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* 画面左下の戻る（/trips/... のみ表示）: デスクトップ中心 */}
         <FloatingBackButton className="hidden sm:flex" href="/trips" />
 
+        {process.env.NODE_ENV !== 'production' && (
+          <a href="/" className="fixed bottom-4 right-4 z-[60] rounded-md border bg-white px-3 py-2 text-xs shadow">
+            Go LP
+          </a>
+        )}
+
         <AppFooter />
       </body>
     </html>
   )
 }
+
 
