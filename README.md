@@ -33,6 +33,7 @@
 
 ## アプリリンク
 <!-- デプロイ後のリンクを貼る。 -->
+https://travel-app-x46b.vercel.app/
 
 ## テスト用アカウント
 - メールアドレス　`test@example.com`
