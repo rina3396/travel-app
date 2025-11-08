@@ -1,148 +1,148 @@
-// app/trips/new/page.tsx // 旅の新規作成ウィザード（クライアント）
-"use client" // クライアントコンポーネント
+// app/trips/new/page.tsx — 旅行の新規作成（ウィザード）
+"use client"
 
-import { useEffect, useMemo, useState } from "react" // Reactフック
-import { useRouter } from "next/navigation" // ルーター
-import { createBrowserClient } from "@supabase/ssr" // Supabaseブラウザ
-import type { CreateTripRequest } from "@/types/trips" // 型
-import Card from "@/components/ui/Card" // カード
-import Button from "@/components/ui/Button" // ボタン
+import { useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
+import { createBrowserClient } from "@supabase/ssr"
+import type { CreateTripRequest } from "@/types/trips"
+import Card from "@/components/ui/Card"
+import Button from "@/components/ui/Button"
 
-type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6 // ステップ型
+type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6
 
-export default function TripNewPage() { // ページ本体
-  const router = useRouter() // ルーター
+export default function TripNewPage() {
+  const router = useRouter()
 
-  // 入力値 // 各ステップの入力状態
-  const [title, setTitle] = useState("") // タイトル
-  const [startDate, setStartDate] = useState<string>("") // 開始日
-  const [endDate, setEndDate] = useState<string>("") // 終了日
-  const [participants, setParticipants] = useState<string[]>([]) // 参加者メール
-  const [participantInput, setParticipantInput] = useState<string>("") // 参加者入力
-  const [budget, setBudget] = useState<string>("") // 予算
-  const [currency, setCurrency] = useState<string>("JPY") // 通貨
-  const [isPublic, setIsPublic] = useState<boolean>(false) // 公開フラグ
+  // 入力値
+  const [title, setTitle] = useState("")
+  const [startDate, setStartDate] = useState<string>("")
+  const [endDate, setEndDate] = useState<string>("")
+  const [participants, setParticipants] = useState<string[]>([])
+  const [participantInput, setParticipantInput] = useState<string>("")
+  const [budget, setBudget] = useState<string>("")
+  const [currency, setCurrency] = useState<string>("JPY")
+  const [isPublic, setIsPublic] = useState<boolean>(false)
 
-  // 進行 // ステップ・ロードなど
-  const [step, setStep] = useState<Step>(0) // 現在ステップ
-  const [loading, setLoading] = useState(false) // 通信中
-  const [error, setError] = useState<string | null>(null) // エラー
-  const [createdTripId, setCreatedTripId] = useState<string | null>(null) // 作成結果
+  // 状態
+  const [step, setStep] = useState<Step>(0)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [createdTripId, setCreatedTripId] = useState<string | null>(null)
 
   // Supabase ブラウザクライアント
   const supabase = useMemo(
-    () => createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!), // 環境変数から初期化
-    [] // 初回のみ
+    () => createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!),
+    []
   )
 
-  // 認証未ログインなら /auth/login へ
-  useEffect(() => { // ガード
-    let mounted = true // マウントフラグ
-    ;(async () => { // 即時非同期
-      const { data: { session } } = await supabase.auth.getSession() // セッション取得
-      if (mounted && !session) router.replace("/auth/login") // 未ログインは遷移
+  // 未認証なら /auth/login へ
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (mounted && !session) router.replace("/auth/login")
     })()
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => { // 変更監視
-      if (!session) router.replace("/auth/login") // 未ログインは遷移
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) router.replace("/auth/login")
     })
-    return () => { mounted = false; sub.subscription.unsubscribe() } // クリーンアップ
+    return () => { mounted = false; sub.subscription.unsubscribe() }
   }, [router, supabase])
 
   // 参加者メールのバリデーション
-  const isValidEmail = (s: string) => /.+@.+\..+/.test(s.trim().toLowerCase()) // 簡易
-  const addParticipant = () => { // 追加
-    const email = participantInput.trim().toLowerCase() // 正規化
-    if (!email) return // 空は無視
-    if (!isValidEmail(email)) { setError("���[���A�h���X�̌`��������������܂���"); return } // 検証
-    if (participants.includes(email)) { setParticipantInput(""); return } // 重複は無視
-    setParticipants((prev) => [...prev, email]) // 追加
-    setParticipantInput("") // クリア
+  const isValidEmail = (s: string) => /.+@.+\..+/.test(s.trim().toLowerCase())
+  const addParticipant = () => {
+    const email = participantInput.trim().toLowerCase()
+    if (!email) return
+    if (!isValidEmail(email)) { setError("メールアドレスの形式が正しくありません"); return }
+    if (participants.includes(email)) { setParticipantInput(""); return }
+    setParticipants((prev) => [...prev, email])
+    setParticipantInput("")
   }
-  const removeParticipant = (email: string) => setParticipants((prev) => prev.filter((e) => e !== email)) // 削除
+  const removeParticipant = (email: string) => setParticipants((prev) => prev.filter((e) => e !== email))
 
   // ステップごとの入力チェック
-  const validateCurrentStep = (): string | null => { // 検証
+  const validateCurrentStep = (): string | null => {
     if (step === 0) {
-      if (!title.trim()) return "�^�C�g������͂��Ă�������" // タイトル必須
+      if (!title.trim()) return "タイトルを入力してください"
     }
     if (step === 1) {
       if (startDate && endDate) {
         const s = new Date(startDate)
         const e = new Date(endDate)
-        if (s > e) return "�J�n���͏I�������O�ɂ��Ă�������" // 期間の整合性
+        if (s > e) return "開始日は終了日より前にしてください"
       }
     }
     if (step === 2) {
-      if (participantInput && !isValidEmail(participantInput)) return "�Q���҂̃��[���`��������������܂���" // 参加者入力検証
+      if (participantInput && !isValidEmail(participantInput)) return "メールアドレスの形式が正しくありません"
     }
     if (step === 3) {
       if (budget) {
         const v = Number(budget)
-        if (!Number.isFinite(v) || v < 0) return "�\�Z��0�ȏ�̐��l�œ��͂��Ă�������" // 予算輸入
+        if (!Number.isFinite(v) || v < 0) return "予算は0以上の数値で入力してください"
       }
     }
-    return null // OK
+    return null
   }
 
-  const goNext = () => { // 次へ
-    const v = validateCurrentStep() // 検証
-    if (v) { setError(v); return } // エラー
-    setError(null) // クリア
-    setStep((s) => (s < 6 ? (s + 1) as Step : s)) // 前進
+  const goNext = () => {
+    const v = validateCurrentStep()
+    if (v) { setError(v); return }
+    setError(null)
+    setStep((s) => (s < 6 ? (s + 1) as Step : s))
   }
-  const goPrev = () => setStep((s) => (s > 0 ? (s - 1) as Step : s)) // 前へ
+  const goPrev = () => setStep((s) => (s > 0 ? (s - 1) as Step : s))
 
-  const submitCreate = async () => { // 作成送信
-    const v = validateCurrentStep() // 検証
-    if (v) { setError(v); return } // エラー
-    setLoading(true) // 読込ON
-    setError(null) // クリア
+  const submitCreate = async () => {
+    const v = validateCurrentStep()
+    if (v) { setError(v); return }
+    setLoading(true)
+    setError(null)
     try {
-      const { data: { session } } = await supabase.auth.getSession() // セッション
-      const token = session?.access_token // トークン
-      if (!token) { setError("�����O�C���ł��B��Ƀ��O�C�����Ă�������"); setLoading(false); return } // 未ログイン
+      const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token
+      if (!token) { setError("未ログインです。先にログインしてください"); setLoading(false); return }
 
-      const payload: CreateTripRequest = { // リクエスト
-        title: title.trim(), // タイトル
-        startDate: startDate || null, // 開始
-        endDate: endDate || null, // 終了
-        participants: participants.length ? participants : undefined, // 参加者
-        budget: budget ? { amount: Number(budget), currency } : undefined, // 予算
-        share: isPublic ? { public: true } : undefined, // 公開
+      const payload: CreateTripRequest = {
+        title: title.trim(),
+        startDate: startDate || null,
+        endDate: endDate || null,
+        participants: participants.length ? participants : undefined,
+        budget: budget ? { amount: Number(budget), currency } : undefined,
+        share: isPublic ? { public: true } : undefined,
       }
 
-      const res = await fetch("/api/trips/new", { // API
-        method: "POST", // POST
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, // ヘッダ
-        body: JSON.stringify(payload), // 本文
+      const res = await fetch("/api/trips/new", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
       })
-      if (!res.ok) throw new Error(await res.text()) // エラー
-      const json = await res.json() as { id?: string } // 結果
-      const id = json?.id // ID
-      setCreatedTripId(id ?? null) // 保持
-      if (id) router.replace(`/trips/${encodeURIComponent(id)}`) // 詳細へ
+      if (!res.ok) throw new Error(await res.text())
+      const json = await res.json() as { id?: string }
+      const id = json?.id
+      setCreatedTripId(id ?? null)
+      if (id) router.replace(`/trips/${encodeURIComponent(id)}`)
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "�쐬�Ɏ��s���܂���") // 失敗
+      setError(e instanceof Error ? e.message : "作成に失敗しました")
     } finally {
-      setLoading(false) // 読込OFF
+      setLoading(false)
     }
   }
 
-  return ( // 描画
-    <section className="mx-auto w-full max-w-2xl space-y-6 p-4"> {/* コンテナ */}
-      <header className="space-y-1"> {/* ヘッダー */}
-        <h1 className="text-2xl font-bold">�V�K�쐬</h1> {/* タイトル */}
-        <p className="text-sm text-gray-600">ステップ: {step}</p> {/* 現在のステップ */}
+  return (
+    <section className="mx-auto w-full max-w-2xl space-y-6 p-4">
+      <header className="space-y-1">
+        <h1 className="text-2xl font-bold">新規作成</h1>
+        <p className="text-sm text-gray-600">ステップ: {step}</p>
       </header>
 
-      {error && <Card><div className="p-3 text-sm text-red-600">{error}</div></Card>} {/* エラー */}
+      {error && <Card><div className="p-3 text-sm text-red-600">{error}</div></Card>}
 
       {/* Step 0: タイトル */}
       {step === 0 && (
         <Card>
-          <div className="grid gap-2 p-3"> {/* 入力 */}
-            <label className="text-xs text-gray-600">�^�C�g��</label>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border px-3 py-2 text-sm" placeholder="沖縄旅 2025 夏" />
+          <div className="grid gap-2 p-3">
+            <label className="text-xs text-gray-600">タイトル</label>
+            <input value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border px-3 py-2 text-sm" placeholder="家族旅行 2025 年" />
           </div>
         </Card>
       )}
@@ -150,13 +150,13 @@ export default function TripNewPage() { // ページ本体
       {/* Step 1: 期間 */}
       {step === 1 && (
         <Card>
-          <div className="grid grid-cols-2 gap-3 p-3"> {/* 期間入力 */}
+          <div className="grid grid-cols-2 gap-3 p-3">
             <div>
-              <label className="text-xs text-gray-600">�J�n��</label>
+              <label className="text-xs text-gray-600">開始日</label>
               <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full rounded-xl border px-3 py-2 text-sm" />
             </div>
             <div>
-              <label className="text-xs text-gray-600">�I����</label>
+              <label className="text-xs text-gray-600">終了日</label>
               <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full rounded-xl border px-3 py-2 text-sm" />
             </div>
           </div>
@@ -166,14 +166,14 @@ export default function TripNewPage() { // ページ本体
       {/* Step 2: 参加者 */}
       {step === 2 && (
         <Card>
-          <div className="grid gap-3 p-3"> {/* 入力 */}
-            <div className="grid grid-cols-3 gap-2"> {/* メール入力 */}
+          <div className="grid gap-3 p-3">
+            <div className="grid grid-cols-3 gap-2">
               <input type="email" value={participantInput} onChange={(e) => setParticipantInput(e.target.value)} className="col-span-2 rounded-xl border px-3 py-2 text-sm" placeholder="friend@example.com" />
               <Button onClick={addParticipant} type="button" variant="outline">追加</Button>
             </div>
-            <ul className="flex flex-wrap gap-2"> {/* 参加者一覧 */}
+            <ul className="flex flex-wrap gap-2">
               {participants.map((mail) => (
-                <li key={mail} className="inline-flex items-center gap-2 rounded-full border px-2 py-1 text-xs"> {/* ピル */}
+                <li key={mail} className="inline-flex items-center gap-2 rounded-full border px-2 py-1 text-xs">
                   <span className="truncate max-w-48">{mail}</span>
                   <Button size="xs" variant="outline" onClick={() => removeParticipant(mail)}>削除</Button>
                 </li>
@@ -186,7 +186,7 @@ export default function TripNewPage() { // ページ本体
       {/* Step 3: 予算 */}
       {step === 3 && (
         <Card>
-          <div className="grid grid-cols-3 gap-3 p-3"> {/* 入力 */}
+          <div className="grid grid-cols-3 gap-3 p-3">
             <div className="col-span-2">
               <label className="text-xs text-gray-600">予算</label>
               <input value={budget} onChange={(e) => setBudget(e.target.value)} type="number" min={0} className="w-full rounded-xl border px-3 py-2 text-sm" />
@@ -206,8 +206,8 @@ export default function TripNewPage() { // ページ本体
       {/* Step 4: 公開設定 */}
       {step === 4 && (
         <Card>
-          <div className="flex items-center justify-between p-3"> {/* トグル */}
-            <div className="text-sm">公開リンクを作成（誰でも閲覧可）</div>
+          <div className="flex items-center justify-between p-3">
+            <div className="text-sm">公開リンクを有効にする（リンクを知っている人が閲覧可能）</div>
             <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
           </div>
         </Card>
@@ -216,12 +216,12 @@ export default function TripNewPage() { // ページ本体
       {/* Step 5: 確認 */}
       {step === 5 && (
         <Card>
-          <div className="grid gap-2 p-3 text-sm"> {/* 概要 */}
-            <div>タイトル: {title || '（未設定）'}</div>
+          <div className="grid gap-2 p-3 text-sm">
+            <div>タイトル: {title || '未設定'}</div>
             <div>期間: {(startDate || '未設定')} - {(endDate || '未設定')}</div>
-            <div>参加者: {participants.length ? participants.join(', ') : '（なし）'}</div>
-            <div>予算: {budget ? `${budget} ${currency}` : '（未設定）'}</div>
-            <div>公開: {isPublic ? 'はい' : 'いいえ'}</div>
+            <div>参加者: {participants.length ? participants.join(', ') : 'なし'}</div>
+            <div>予算: {budget ? `${budget} ${currency}` : '未設定'}</div>
+            <div>公開: {isPublic ? '有効' : '無効'}</div>
           </div>
         </Card>
       )}
@@ -229,11 +229,11 @@ export default function TripNewPage() { // ページ本体
       {/* Step 6: 完了 */}
       {step === 6 && (
         <Card>
-          <div className="p-3 text-sm">作成完了。{createdTripId ? `ID: ${createdTripId}` : ''}</div>
+          <div className="p-3 text-sm">作成が完了しました。{createdTripId ? `ID: ${createdTripId}` : ''}</div>
         </Card>
       )}
 
-      <div className="flex items-center justify-between"> {/* ナビゲーション */}
+      <div className="flex items-center justify-between">
         <Button variant="outline" onClick={goPrev} disabled={step === 0 || loading}>戻る</Button>
         {step < 5 && <Button onClick={goNext} disabled={loading}>次へ</Button>}
         {step === 5 && <Button onClick={submitCreate} disabled={loading}>作成</Button>}

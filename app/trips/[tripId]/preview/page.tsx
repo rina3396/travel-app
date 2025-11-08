@@ -1,34 +1,34 @@
-// app/trips/[tripId]/preview/page.tsx // 旅のプレビュー（サーバーコンポーネント）
-import Card from "@/components/ui/Card" // カード
-import { createServer } from "@/lib/supabase/server" // サーバーSupabase
-import type { DbActivity, DbExpense, DbTask } from "@/types/trips" // 型
+// app/trips/[tripId]/preview/page.tsx — 旅行のプレビュー（サーバーコンポーネント）
+import Card from "@/components/ui/Card"
+import { createServer } from "@/lib/supabase/server"
+import type { DbActivity, DbExpense, DbTask } from "@/types/trips"
 
-export default async function TripPreviewPage({ params }: { params: { tripId: string } }) { // ページ
-  const { tripId } = params // パラメータ
-  const { supabase } = await createServer() // クライアント
+export default async function TripPreviewPage({ params }: { params: { tripId: string } }) {
+  const { tripId } = params
+  const { supabase } = await createServer()
 
-  const { data: trip, error: tripErr } = await supabase // 旅行情報
-    .from("trips") // テーブル
-    .select("id, title, start_date, end_date") // カラム
-    .eq("id", tripId) // 絞り込み
-    .single() // 単一
+  const { data: trip, error: tripErr } = await supabase
+    .from("trips")
+    .select("id, title, start_date, end_date")
+    .eq("id", tripId)
+    .single()
 
-  let activities: DbActivity[] = [] // 活動一覧
-  let dayMap: Record<string, string> = {} // day_id→日付のマップ
-  let expenses: DbExpense[] = [] // 支出一覧
-  let tasks: DbTask[] = [] // タスク一覧
+  let activities: DbActivity[] = []
+  let dayMap: Record<string, string> = {}
+  let expenses: DbExpense[] = []
+  let tasks: DbTask[] = []
 
-  try { // アクティビティ取得
+  try {
     const { data, error } = await supabase
       .from("activities")
       .select("id, trip_id, title, start_time, end_time, location, day_id, note, order_no")
       .eq("trip_id", tripId)
     if (!error && data) activities = data
-  } catch { // 失敗時は空
+  } catch {
     activities = []
   }
 
-  try { // 日付テーブル取得
+  try {
     const { data: days, error: dayErr } = await supabase
       .from("trip_days")
       .select("id, date")
@@ -36,11 +36,10 @@ export default async function TripPreviewPage({ params }: { params: { tripId: st
     if (!dayErr && days) {
       dayMap = Object.fromEntries((days as { id: string; date: string }[]).map((d) => [d.id, d.date]))
     }
-  } catch { // 失敗は空
+  } catch {
     dayMap = {}
   }
 
-  // Expenses // 支出
   try {
     const { data, error } = await supabase
       .from("expenses")
@@ -52,7 +51,6 @@ export default async function TripPreviewPage({ params }: { params: { tripId: st
     expenses = []
   }
 
-  // Tasks // タスク
   try {
     const { data, error } = await supabase
       .from("tasks")
@@ -64,20 +62,20 @@ export default async function TripPreviewPage({ params }: { params: { tripId: st
     tasks = []
   }
 
-  if (tripErr || !trip) { // 旅行が取得できない場合
+  if (tripErr || !trip) {
     return (
-      <section className="mx-auto max-w-2xl space-y-4 p-6"> {/* エラー表示 */}
-        <h1 className="text-xl font-bold text-red-600">�v���r���[��\���ł��܂���</h1>
+      <section className="mx-auto max-w-2xl space-y-4 p-6">
+        <h1 className="text-xl font-bold text-red-600">プレビューを表示できません</h1>
         <p className="text-sm text-gray-600">tripId: {tripId}</p>
         {tripErr && <p className="text-sm text-gray-500">{tripErr.message}</p>}
       </section>
     )
   }
 
-  const title = trip.title || "�^�C�g�����ݒ�" // タイトル
-  const period = `${trip.start_date ?? "���ݒ�"} - ${trip.end_date ?? "���ݒ�"}` // 期間
+  const title = trip.title || "タイトル未設定"
+  const period = `${trip.start_date ?? "未設定"} - ${trip.end_date ?? "未設定"}`
 
-  // Sort activities: date asc -> time asc -> title asc // 活動の並べ替え
+  // 並び替え: 日付 -> 開始時間 -> タイトル
   const orderedActivities = [...activities].sort((a, b) => {
     const aDate = a.day_id ? dayMap[a.day_id] : undefined
     const bDate = b.day_id ? dayMap[b.day_id] : undefined
@@ -90,56 +88,56 @@ export default async function TripPreviewPage({ params }: { params: { tripId: st
     return a.title.localeCompare(b.title)
   })
 
-  // Group by date (���ݒ� last) // 日付ごとにグループ化（未設定は最後）
+  // 日付ごとにグループ（未設定は最後）
   const grouped = (() => {
     const map = new Map<string, DbActivity[]>()
     for (const a of orderedActivities) {
-      const d = a.day_id ? (dayMap[a.day_id] ?? '���ݒ�') : '���ݒ�'
+      const d = a.day_id ? (dayMap[a.day_id] ?? '未設定') : '未設定'
       if (!map.has(d)) map.set(d, [])
       map.get(d)!.push(a)
     }
     const keys = Array.from(map.keys())
-    const unsetIdx = keys.indexOf('���ݒ�')
-    const dated = keys.filter(k => k !== '���ݒ�').sort((x, y) => x.localeCompare(y))
-    if (unsetIdx !== -1) dated.push('���ݒ�')
+    const unsetIdx = keys.indexOf('未設定')
+    const dated = keys.filter(k => k !== '未設定').sort((x, y) => x.localeCompare(y))
+    if (unsetIdx !== -1) dated.push('未設定')
     return dated.map(k => ({ date: k, items: map.get(k)! }))
   })()
 
-  const totalAmount = expenses.reduce((s, x) => s + (Number(x.amount) || 0), 0) // 支出合計
-  const formatJPY = (v: number) => new Intl.NumberFormat('ja-JP').format(Math.round(v)) // 円整形
+  const totalAmount = expenses.reduce((s, x) => s + (Number(x.amount) || 0), 0)
+  const formatJPY = (v: number) => new Intl.NumberFormat('ja-JP').format(Math.round(v))
 
-  return ( // 描画
-    <section className="mx-auto w-full max-w-2xl space-y-6 p-4 print:max-w-none print:p-8"> {/* コンテナ */}
-      <header className="space-y-1"> {/* ヘッダー */}
-        <h1 className="text-2xl font-semibold">�v���r���[</h1> {/* タイトル */}
-        <p className="text-sm text-gray-600">tripId: {tripId}</p> {/* ID */}
+  return (
+    <section className="mx-auto w-full max-w-2xl space-y-6 p-4 print:max-w-none print:p-8">
+      <header className="space-y-1">
+        <h1 className="text-2xl font-semibold">プレビュー</h1>
+        <p className="text-sm text-gray-600">tripId: {tripId}</p>
       </header>
 
-      <Card> {/* 概要 */}
-        <div className="flex items-center justify-between"> {/* 行 */}
-          <div className="min-w-0"> {/* 左領域 */}
-            <div className="truncate text-lg font-semibold">{title}</div> {/* タイトル */}
-            <div className="mt-1 text-xs text-gray-600"> {/* 期間 */}
-              <span className="inline-flex items-center gap-1 rounded-full bg-gray-50 px-2 py-0.5 text-gray-700">{period}</span> {/* バッジ */}
+      <Card>
+        <div className="flex items-center justify-between">
+          <div className="min-w-0">
+            <div className="truncate text-lg font-semibold">{title}</div>
+            <div className="mt-1 text-xs text-gray-600">
+              <span className="inline-flex items-center gap-1 rounded-full bg-gray-50 px-2 py-0.5 text-gray-700">{period}</span>
             </div>
           </div>
         </div>
       </Card>
 
-      {/* Activities */} {/* 活動 */}
-      <section className="space-y-3"> {/* セクション */}
-        <h2 className="text-base font-semibold">�A�N�e�B�r�e�B</h2> {/* 見出し */}
-        {orderedActivities.length === 0 ? ( // 空
-          <Card><div className="p-3 text-sm text-gray-500">���݈͂����Ă��܂���B</div></Card>
+      {/* Activities */}
+      <section className="space-y-3">
+        <h2 className="text-base font-semibold">アクティビティ</h2>
+        {orderedActivities.length === 0 ? (
+          <Card><div className="p-3 text-sm text-gray-500">アクティビティがありません。</div></Card>
         ) : (
-          grouped.map(({ date, items }) => ( // グループ
-            <Card key={date}> {/* カード */}
-              <div className="border-b p-3 text-sm text-gray-600">{date}</div> {/* 見出し */}
-              <ul className="divide-y"> {/* リスト */}
-                {items.map((a) => ( // 行
-                  <li key={a.id} className="p-3 text-sm"> {/* アイテム */}
-                    <div className="font-medium">{a.title}</div> {/* タイトル */}
-                    <div className="mt-0.5 text-xs text-gray-600">{a.start_time ?? '—'} {a.location ? `@ ${a.location}` : ''}</div> {/* 時刻・場所 */}
+          grouped.map(({ date, items }) => (
+            <Card key={date}>
+              <div className="border-b p-3 text-sm text-gray-600">{date}</div>
+              <ul className="divide-y">
+                {items.map((a) => (
+                  <li key={a.id} className="p-3 text-sm">
+                    <div className="font-medium">{a.title}</div>
+                    <div className="mt-0.5 text-xs text-gray-600">{a.start_time ?? '?'} {a.location ? `@ ${a.location}` : ''}</div>
                   </li>
                 ))}
               </ul>
@@ -148,25 +146,25 @@ export default async function TripPreviewPage({ params }: { params: { tripId: st
         )}
       </section>
 
-      {/* Expenses */} {/* 支出 */}
-      <section className="space-y-2"> {/* セクション */}
-        <h2 className="text-base font-semibold">�\�Z</h2> {/* 見出し */}
+      {/* Expenses */}
+      <section className="space-y-2">
+        <h2 className="text-base font-semibold">予算</h2>
         <Card>
-          <div className="flex items-center justify-between p-3 text-sm"> {/* 合計 */}
-            <div className="text-gray-700">���v</div>
+          <div className="flex items-center justify-between p-3 text-sm">
+            <div className="text-gray-700">合計</div>
             <div className="font-semibold">\{formatJPY(totalAmount)}</div>
           </div>
         </Card>
-        {expenses.length > 0 && ( // 明細
+        {expenses.length > 0 && (
           <Card>
-            <ul className="divide-y text-sm"> {/* リスト */}
+            <ul className="divide-y text-sm">
               {expenses.map((x) => (
-                <li key={x.id} className="flex items-center justify-between p-3"> {/* 行 */}
+                <li key={x.id} className="flex items-center justify-between p-3">
                   <div className="min-w-0">
-                    <div className="truncate font-medium">{x.title}</div> {/* タイトル */}
-                    <div className="text-xs text-gray-600">{x.date} · {x.category}</div> {/* 日付カテゴリ */}
+                    <div className="truncate font-medium">{x.title}</div>
+                    <div className="text-xs text-gray-600">{x.date} ・ {x.category}</div>
                   </div>
-                  <div className="text-right font-medium">\{formatJPY(Number(x.amount) || 0)}</div> {/* 金額 */}
+                  <div className="text-right font-medium">\{formatJPY(Number(x.amount) || 0)}</div>
                 </li>
               ))}
             </ul>
@@ -174,18 +172,18 @@ export default async function TripPreviewPage({ params }: { params: { tripId: st
         )}
       </section>
 
-      {/* Tasks */} {/* タスク */}
-      <section className="space-y-2"> {/* セクション */}
-        <h2 className="text-base font-semibold">TODO</h2> {/* 見出し */}
-        {tasks.length === 0 ? ( // 空
-          <Card><div className="p-3 text-sm text-gray-500">TODO���Ȃ��܂���B</div></Card>
+      {/* Tasks */}
+      <section className="space-y-2">
+        <h2 className="text-base font-semibold">TODO</h2>
+        {tasks.length === 0 ? (
+          <Card><div className="p-3 text-sm text-gray-500">TODOはありません。</div></Card>
         ) : (
           <Card>
-            <ul className="divide-y text-sm"> {/* リスト */}
+            <ul className="divide-y text-sm">
               {tasks.map((t) => (
-                <li key={t.id} className="flex items-center justify-between p-3"> {/* 行 */}
-                  <div className="truncate">{t.title}</div> {/* タイトル */}
-                  <div className="text-xs text-gray-600">{t.done ? 'done' : 'open'}</div> {/* 状態 */}
+                <li key={t.id} className="flex items-center justify-between p-3">
+                  <div className="truncate">{t.title}</div>
+                  <div className="text-xs text-gray-600">{t.done ? '完了' : '未完了'}</div>
                 </li>
               ))}
             </ul>

@@ -79,10 +79,10 @@ export default function AppHeader() {
             className={[navClass('/guide'), 'mr-6 sm:mr-8'].join(' ')}
             href="/guide"
             aria-current={isActive('/guide') ? 'page' : undefined}
-            aria-label="ガイド"
-            title="ガイド"
+            aria-label="使い方"
+            title="使い方"
           >
-            ガイド
+            使い方
           </Link>
           <Link
             className={navClass('/trips/new')}

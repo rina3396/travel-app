@@ -1,192 +1,192 @@
-// app/trips/[tripId]/tasks/page.tsx // TODO/持ち物 管理（クライアント）
+// app/trips/[tripId]/tasks/page.tsx — TODO/持ち物 管理（クライアント）
 "use client"
 
-import { useEffect, useMemo, useState, use as usePromise } from "react" // Reactフック
-import type { Task } from "@/types/trips" // 型
-import Button from "@/components/ui/Button" // ボタン
-import Card from "@/components/ui/Card" // カード
-import Chip from "@/components/ui/Chip" // チップ
-import Skeleton from "@/components/ui/Skeleton" // スケルトン
+import { useEffect, useMemo, useState, use as usePromise } from "react"
+import type { Task } from "@/types/trips"
+import Button from "@/components/ui/Button"
+import Card from "@/components/ui/Card"
+import Chip from "@/components/ui/Chip"
+import Skeleton from "@/components/ui/Skeleton"
 
-type DbTaskRow = { id: string; trip_id: string; title: string; kind?: "todo" | "packing"; done?: boolean; created_at?: string } // DB行
-function toTask(x: DbTaskRow): Task { // DB→表示用マッピング
+type DbTaskRow = { id: string; trip_id: string; title: string; kind?: "todo" | "packing"; done?: boolean; created_at?: string }
+function toTask(x: DbTaskRow): Task {
   return {
-    id: x.id, // ID
-    tripId: x.trip_id, // 旅ID
-    title: x.title, // タイトル
-    kind: (x.kind ?? "todo") as Task["kind"], // 種別
-    done: !!x.done, // 完了
-    createdAt: x.created_at ?? new Date().toISOString(), // 作成日時
+    id: x.id,
+    tripId: x.trip_id,
+    title: x.title,
+    kind: (x.kind ?? "todo") as Task["kind"],
+    done: !!x.done,
+    createdAt: x.created_at ?? new Date().toISOString(),
   }
 }
 
-export default function TripTasksPage({ params }: { params: Promise<{ tripId: string }> }) { // ページ
-  const { tripId } = usePromise(params) // ルートパラメータ
+export default function TripTasksPage({ params }: { params: Promise<{ tripId: string }> }) {
+  const { tripId } = usePromise(params)
 
-  const [items, setItems] = useState<Task[]>([]) // 一覧
-  const [loading, setLoading] = useState(true) // ローディング
-  const [error, setError] = useState<string | null>(null) // エラー
+  const [items, setItems] = useState<Task[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const [title, setTitle] = useState("") // 入力: タイトル
-  const [kind, setKind] = useState<Task["kind"]>("todo") // 入力: 種別
-  const [filter, setFilter] = useState<"all" | "todo" | "packing">("all") // フィルタ
+  const [title, setTitle] = useState("")
+  const [kind, setKind] = useState<Task["kind"]>("todo")
+  const [filter, setFilter] = useState<"all" | "todo" | "packing">("all")
 
-  useEffect(() => { // 初期ロード
-    let abort = false // 中断フラグ
+  useEffect(() => {
+    let abort = false
     ;(async () => {
       try {
-        setLoading(true) // 読込ON
-        setError(null) // エラー消去
-        const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}/tasks`, { cache: "no-store" }) // 取得
-        if (!res.ok) throw new Error(await res.text()) // エラー
-        const data: unknown = await res.json() // JSON
-        if (!abort) setItems(Array.isArray(data) ? (data as DbTaskRow[]).map(toTask) : []) // 反映
+        setLoading(true)
+        setError(null)
+        const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}/tasks`, { cache: "no-store" })
+        if (!res.ok) throw new Error(await res.text())
+        const data: unknown = await res.json()
+        if (!abort) setItems(Array.isArray(data) ? (data as DbTaskRow[]).map(toTask) : [])
       } catch (e: unknown) {
-        if (!abort) setError(e instanceof Error ? e.message : "�ǂݍ��݂Ɏ��s���܂���") // 失敗
+        if (!abort) setError(e instanceof Error ? e.message : "取得に失敗しました")
       } finally {
-        if (!abort) setLoading(false) // 読込OFF
+        if (!abort) setLoading(false)
       }
     })()
-    return () => { abort = true } // クリーンアップ
-  }, [tripId]) // 依存
+    return () => { abort = true }
+  }, [tripId])
 
-  const filtered = useMemo(() => { // フィルタ済み
-    if (filter === "all") return items // 全件
-    return items.filter((t) => t.kind === filter) // 種別一致
-  }, [items, filter]) // 依存
+  const filtered = useMemo(() => {
+    if (filter === "all") return items
+    return items.filter((t) => t.kind === filter)
+  }, [items, filter])
 
-  async function addTask(e: React.FormEvent) { // 追加
-    e.preventDefault() // 送信抑止
-    if (!title.trim()) return // 入力必須
+  async function addTask(e: React.FormEvent) {
+    e.preventDefault()
+    if (!title.trim()) return
     try {
-      setLoading(true) // 読込ON
-      setError(null) // エラー消去
-      const body = { title: title.trim(), kind } // ボディ
+      setLoading(true)
+      setError(null)
+      const body = { title: title.trim(), kind }
       const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}/tasks`, {
-        method: "POST", // 作成
-        headers: { "Content-Type": "application/json" }, // JSON
-        body: JSON.stringify(body), // ペイロード
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
       })
-      if (!res.ok) throw new Error(await res.text()) // エラー
-      const ref = await fetch(`/api/trips/${encodeURIComponent(tripId)}/tasks`, { cache: "no-store" }) // 再読込
-      const data: unknown = await ref.json() // JSON
-      setItems(Array.isArray(data) ? (data as DbTaskRow[]).map(toTask) : []) // 更新
-      setTitle("") // クリア
-      setKind("todo") // デフォルト
+      if (!res.ok) throw new Error(await res.text())
+      const ref = await fetch(`/api/trips/${encodeURIComponent(tripId)}/tasks`, { cache: "no-store" })
+      const data: unknown = await ref.json()
+      setItems(Array.isArray(data) ? (data as DbTaskRow[]).map(toTask) : [])
+      setTitle("")
+      setKind("todo")
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "�ǉ��Ɏ��s���܂���") // 失敗
+      setError(e instanceof Error ? e.message : "追加に失敗しました")
     } finally {
-      setLoading(false) // 読込OFF
+      setLoading(false)
     }
   }
 
-  async function toggle(id: string) { // 完了トグル
-    const before = items // 退避
-    const next = before.map((x) => (x.id === id ? { ...x, done: !x.done } : x)) // 反転
-    setItems(next) // 楽観更新
+  async function toggle(id: string) {
+    const before = items
+    const next = before.map((x) => (x.id === id ? { ...x, done: !x.done } : x))
+    setItems(next)
     try {
-      const t = next.find((x) => x.id === id) // 対象
-      if (!t) return // なし
+      const t = next.find((x) => x.id === id)
+      if (!t) return
       await fetch(`/api/trips/${encodeURIComponent(tripId)}/tasks/${encodeURIComponent(id)}`, {
-        method: "PATCH", // 更新
-        headers: { "Content-Type": "application/json" }, // JSON
-        body: JSON.stringify({ done: t.done }), // フィールド
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ done: t.done }),
       })
-    } catch { // 失敗
-      setItems(before) // 巻き戻し
+    } catch {
+      setItems(before)
     }
   }
 
-  async function removeTask(id: string) { // 削除
-    const before = items // 退避
-    setItems(before.filter((x) => x.id !== id)) // 楽観削除
+  async function removeTask(id: string) {
+    const before = items
+    setItems(before.filter((x) => x.id !== id))
     try {
-      await fetch(`/api/trips/${encodeURIComponent(tripId)}/tasks/${encodeURIComponent(id)}`, { method: "DELETE" }) // 削除
-    } catch { // 失敗
-      setItems(before) // 巻き戻し
+      await fetch(`/api/trips/${encodeURIComponent(tripId)}/tasks/${encodeURIComponent(id)}`, { method: "DELETE" })
+    } catch {
+      setItems(before)
     }
   }
 
-  return ( // 描画
-    <section className="mx-auto w-full max-w-2xl space-y-6 p-4"> {/* コンテナ */}
-      <header> {/* ヘッダー */}
-        <h1 className="text-2xl font-bold">TODO�E������</h1> {/* タイトル */}
-        <p className="text-sm text-gray-600">tripId: {tripId}</p> {/* ID */}
+  return (
+    <section className="mx-auto w-full max-w-2xl space-y-6 p-4">
+      <header>
+        <h1 className="text-2xl font-bold">TODO・持ち物</h1>
+        <p className="text-sm text-gray-600">tripId: {tripId}</p>
       </header>
 
-      {/* �ǉ��t�H�[�� */} {/* 追加フォーム */}
+      {/* 追加フォーム */}
       <Card>
-        <form onSubmit={addTask} className="grid gap-3"> {/* 送信で追加 */}
-          <div className="grid grid-cols-3 gap-2"> {/* グリッド */}
-            <div className="col-span-2 space-y-1"> {/* タイトル入力 */}
-              <label className="text-xs text-gray-600">�^�C�g��</label>
+        <form onSubmit={addTask} className="grid gap-3">
+          <div className="grid grid-cols-3 gap-2">
+            <div className="col-span-2 space-y-1">
+              <label className="text-xs text-gray-600">タイトル</label>
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                placeholder="��j�����̈���A���Ă��~��"
+                placeholder="例）海外用アダプターを買う"
                 className="w-full rounded-xl border px-3 py-2 text-sm"
               />
             </div>
-            <div className="space-y-1"> {/* 種別選択 */}
-              <label className="text-xs text-gray-600">���</label>
+            <div className="space-y-1">
+              <label className="text-xs text-gray-600">種別</label>
               <select
                 value={kind}
                 onChange={(e) => setKind(e.target.value as Task["kind"]) }
                 className="w-full rounded-xl border bg-white px-3 py-2 text-sm"
               >
                 <option value="todo">TODO</option>
-                <option value="packing">������</option>
+                <option value="packing">持ち物</option>
               </select>
             </div>
           </div>
-          <div className="flex justify-end"> {/* 送信 */}
-            <Button type="submit">�ǉ�</Button>
+          <div className="flex justify-end">
+            <Button type="submit">追加</Button>
           </div>
         </form>
       </Card>
 
-      {/* �^�u�i�t�B���^�j */} {/* フィルタ */}
+      {/* フィルタ */}
       <div className="flex gap-2">
         {(["all", "todo", "packing"] as const).map((f) => (
-          <Chip key={f} selected={filter === f} onClick={() => setFilter(f)}> {/* 選択 */}
-            {f === "all" ? "���ׂ�" : f === "todo" ? "TODO" : "������"}
+          <Chip key={f} selected={filter === f} onClick={() => setFilter(f)}>
+            {f === "all" ? "すべて" : f === "todo" ? "TODO" : "持ち物"}
           </Chip>
         ))}
       </div>
 
-      {/* �ǂݍ���/�G���[ */} {/* ロード/エラー */}
+      {/* ロード/エラー */}
       {loading && (
         <Card>
-          <div className="grid gap-2"> {/* スケルトン */}
+          <div className="grid gap-2">
             <Skeleton className="h-4 w-1/3" />
             <Skeleton className="h-4 w-2/3" />
             <Skeleton className="h-4 w-1/2" />
           </div>
         </Card>
       )}
-      {error && <p className="text-xs text-rose-600">�G���[: {error}</p>} {/* エラー */}
+      {error && <p className="text-xs text-rose-600">エラー: {error}</p>}
 
-      {/* �ꗗ�i�J�[�h�ň͂ށj */} {/* 一覧 */}
+      {/* 一覧 */}
       <Card className="p-0 overflow-hidden">
         <ul className="divide-y">
           {filtered.length === 0 ? (
-            <li className="p-4 text-sm text-gray-500">�܂����ڂ�����܂���B��̃t�H�[������ǉ����Ă��������B</li> {/* 空表示 */}
+            <li className="p-4 text-sm text-gray-500">まだ項目がありません。上のフォームから追加してください。</li>
           ) : (
             filtered.map((t) => (
-              <li key={t.id} className="group flex items-center gap-3 p-3 transition hover:bg-orange-50"> {/* 行 */}
+              <li key={t.id} className="group flex items-center gap-3 p-3 transition hover:bg-orange-50">
                 <input
                   type="checkbox"
                   checked={t.done}
                   onChange={() => toggle(t.id)}
                   className="h-4 w-4 accent-orange-600"
-                  aria-label="����"
+                  aria-label="完了"
                 />
-                <div className="min-w-0 flex-1"> {/* 本文 */}
-                  <div className={`truncate ${t.done ? "line-through text-gray-400" : ""}`}>{t.title}</div> {/* タイトル */}
-                  <div className="text-xs text-gray-500">{t.kind === "todo" ? "TODO" : "������"}</div> {/* 種別 */}
+                <div className="min-w-0 flex-1">
+                  <div className={`truncate ${t.done ? "line-through text-gray-400" : ""}`}>{t.title}</div>
+                  <div className="text-xs text-gray-500">{t.kind === "todo" ? "TODO" : "持ち物"}</div>
                 </div>
-                <Button onClick={() => removeTask(t.id)} variant="outline" size="sm">�폜</Button> {/* 削除 */}
+                <Button onClick={() => removeTask(t.id)} variant="outline" size="sm">削除</Button>
               </li>
             ))
           )}

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 type Props = {
   className?: string
   label?: string
-  href?: string // フォールバック先（履歴が無い場合）
+  href?: string // フォールバック先（履歴がない場合）
 }
 
 export default function BackButton({ className = '', label = '戻る', href }: Props) {
@@ -54,3 +54,4 @@ export default function BackButton({ className = '', label = '戻る', href }: P
     </button>
   )
 }
+
