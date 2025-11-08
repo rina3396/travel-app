@@ -1,10 +1,10 @@
 # Travel App
 
-Next.js 15（App Router）と Supabase v2 を用いた旅行計画アプリです。トリップ、日別計画（Days）/行程（Activities）、タスク、支出/予算、共有リンク、メンバー権限（RLS）などをサポートします。
+Next.js 15（App Router）と Supabase v2 を用いた旅行計画アプリです。トリップ、日別計画（Days）/行程（Activities）、タスク、支出/予算、共有リンク、メンバー権限（RLS）をサポートします。
 
 ## プロジェクトの概要
 - ログイン後に自分のトリップ一覧を表示し、新規作成や各トリップの詳細管理ができます。
-- 行程（Activities）の日付割り当て、並び替え、タスク管理、支出記録と予算の把握、共同編集者の招待・権限管理を備えています。
+- 行程（Activities）の日付割り当て、並び替え、タスク管理、支出記録と予算の把握、共同編集者の招待・権限管理に対応します。
 - DB は Supabase（PostgreSQL）を利用し、行レベルセキュリティ（RLS）でメンバー権限を制御します。
 
 ## 使用している主な技術
@@ -20,7 +20,6 @@ Next.js 15（App Router）と Supabase v2 を用いた旅行計画アプリで�
 
 ## 必要な環境変数
 `.env.local` に以下を設定します。
-
 - `NEXT_PUBLIC_SUPABASE_URL`（Supabase プロジェクトURL）
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`（Anonキー）
 - `SUPABASE_SERVICE_ROLE_KEY`（必要に応じて。管理系処理で使用）
@@ -38,60 +37,75 @@ SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOi...
 - 本番起動: `npm start`
 - Lint: `npm run lint`
 
-## ディレクトリ構成（抜粋）
-- `app/` — App Router（ページ/レイアウト/APIルート）
-- `components/` — UIコンポーネント
-- `lib/supabase/` — SupabaseクライアントとSQL
-  - `lib/supabase/sql/table_schema.sql` — スキーマ定義
-  - `lib/supabase/sql/dev_seed.sql` — 開発用シード
-- `lib/docs/` — ドキュメント
-  - `lib/docs/dev.md` — 開発ガイド
-  - `lib/docs/table-definitions.md` — テーブル定義サマリ
-  - `lib/docs/er-diagram.md` — ER図（Mermaid）
-  - `lib/docs/screens.md` — 画面一覧（線付きツリー）
-  - `lib/docs/api-routes.md` — API ルート一覧・説明
-  - `lib/docs/structure-others.md` — app/api 以外の構成一覧
-- `types/` — 型定義
-- `styles/` — グローバルCSS
+## 画面一覧（全件・説明）
+- `/` ランディング。ログイン済みなら `/trips` へ自動遷移。
+- `/auth/login` ログイン画面（Email/Password）。成功後 `/trips` へ。
+- `/guide` 使い方ガイド。
+- `/trips` 自分が閲覧可能なトリップ一覧。
+- `/trips/new` 新規トリップの作成フロー。
+- `/trips/[tripId]` トリップ概要（各機能へのハブ）。
+- `/trips/[tripId]/activities` 行程の一覧・作成・編集・並べ替え。
+- `/trips/[tripId]/activities/[activityId]` 個別行程の詳細/編集。
+- `/trips/[tripId]/days` 日付単位の計画管理（Trip Day）。
+- `/trips/[tripId]/tasks` タスクの一覧・作成・更新・削除。
+- `/trips/[tripId]/budget` 予算と支出の表示・支出登録。
+- `/trips/[tripId]/share` メンバー招待・権限設定・共有リンク管理。
+- `/trips/[tripId]/settings` タイトル・日付・アーカイブ等の設定。
+- `/trips/[tripId]/preview` プレビュー用の読み取りビュー。
+- （補足）`app/layout.tsx` は全体レイアウト、`app/trips/loading.tsx` 等は読み込み中のスケルトン表示です。
 
-## 開発環境の構築方法
-1. 依存関係のインストール
-   - `npm install`
-2. 環境変数の設定
-   - `.env.local` に Supabase のURL/キーを設定
-3. データベース初期化（Supabase ダッシュボードの SQL Editor で実行）
-   - スキーマ適用: `lib/supabase/sql/table_schema.sql`
-   - 開発シード: `lib/supabase/sql/dev_seed.sql`
-4. 開発サーバ起動
-   - `npm run dev`（http://localhost:3000）
+## 画面遷移図
+```mermaid
+flowchart TD
+  Landing["/ (Landing)"] -->|Logged in| Trips["/trips"]
+  Landing -->|Login| Login["/auth/login"]
+  Login -->|Success| Trips
+  Trips -->|Open trip| Trip["/trips/[tripId]"]
+  Trips -->|New| NewTrip["/trips/new"]
+  Trip --> Activities["/trips/[tripId]/activities"]
+  Trip --> Days["/trips/[tripId]/days"]
+  Trip --> Tasks["/trips/[tripId]/tasks"]
+  Trip --> Budget["/trips/[tripId]/budget"]
+  Trip --> Share["/trips/[tripId]/share"]
+  Trip --> Settings["/trips/[tripId]/settings"]
+  Trip --> Preview["/trips/[tripId]/preview"]
+  Activities --> Trip
+  Days --> Trip
+  Tasks --> Trip
+  Budget --> Trip
+  Share --> Trip
+  Settings --> Trip
+  Preview --> Trip
+  Trips --- Guide["/guide"]
+```
 
-## 画面一覧（主要）
-- `/` — ランディング（ログイン済みは `/trips` へリダイレクト）
-- `/auth/login` — ログイン
-- `/guide` — 使い方ガイド
-- `/trips` — トリップ一覧
-- `/trips/new` — 新規トリップ作成
-- `/trips/[tripId]` — トリップ概要（配下に activities / days / tasks / budget / share / settings / preview）
+## API ルート
+詳細は `lib/docs/api-routes.md` を参照してください（各エンドポイントのメソッド/説明を掲載）。
 
-詳細は `lib/docs/screens.md` を参照してください。
-
-## API ルート（抜粋）
-- `POST /api/trips/new` — トリップ作成
-- `GET /api/trips/[tripId]/index` — トリップ概要取得
-- `GET/POST /api/trips/[tripId]/tasks` — タスク一覧/作成
-- `PATCH/DELETE /api/trips/[tripId]/tasks/[taskId]` — タスク更新/削除
-- `GET/POST /api/trips/[tripId]/activities` — アクティビティ一覧/作成
-- `POST /api/trips/[tripId]/activities/assign-day` — 日付への割当
-- `GET/POST /api/trips/[tripId]/days/[date]` — 指定日の作成/取得（無ければ作成）
-- `POST /api/trips/[tripId]/days/[date]/activities/reorder` — 並び替え
-- `POST /api/trips/[tripId]/budget/expenses` — 支出の追加
-
-詳細は `lib/docs/api-routes.md` を参照してください。
+## ディレクトリ構成（全件・説明／ファイル詳細なし）
+- `app/` Next.js App Router のアプリ本体。
+  - `app/api/` API ルート群（サーバサイドのハンドラ）。
+    - `app/api/admin/` 開発/管理系エンドポイント（`dev-seed`、`profiles/sync`、`users/lookup`）。
+    - `app/api/trips/` トリップ関連エンドポイント（`new`、`[tripId]` 配下に index/activities/days/tasks/budget 等）。
+  - `app/auth/` 認証関連の画面（`login`）。
+  - `app/guide/` ガイド画面。
+  - `app/trips/` トリップの画面群（一覧、新規、`[tripId]` 配下に各タブ画面）。
+- `components/` 共有 UI コンポーネント。
+  - `components/layout/` ヘッダー/フッター等のレイアウト系。
+  - `components/marketing/` ランディング等のマーケ用。
+  - `components/shadcn/ui/` shadcn ベースの UI プリミティブ。
+  - `components/ui/` アプリ固有の UI コンポーネント。
+- `lib/` ライブラリ類。
+  - `lib/docs/` ドキュメント（開発ガイド、画面一覧、ER図、API 仕様、テーブル定義、ほか）。
+  - `lib/supabase/` Supabase クライアントと SQL。（`server.ts`/`client.ts`/`admin.ts`、`sql/` にスキーマ/シード）
+- `styles/` グローバル CSS（Tailwind v4）。
+- `types/` 型定義（DB 型、アプリ用型）。
+- ルート設定ファイル（抜粋）: `.env.local`, `.gitignore`, `eslint.config.mjs`, `next-env.d.ts`, `next.config.ts`, `package.json`, `postcss.config.mjs`, `tsconfig.json`。
 
 ## データベース（Supabase）
 - スキーマ/ポリシーは `lib/supabase/sql/table_schema.sql`。
-- 行レベルセキュリティ（RLS）有効。メンバーのみ参照、編集は owner / editor のみなどをポリシーで制御。
-- テーブル定義の要約とER図は `lib/docs/` を参照。
+- 行レベルセキュリティ（RLS）有効。メンバーのみ参照、編集は owner / editor のみ等をポリシーで制御。
+- テーブル定義の要約と ER 図は `lib/docs/` を参照。
 
 ## 関連ドキュメント（lib/docs）
 - 開発ガイド: `lib/docs/dev.md`

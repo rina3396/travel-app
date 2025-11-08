@@ -1,112 +1,113 @@
-﻿"use client"
+// app/trips/[tripId]/settings/page.tsx // 設定ページ（クライアント）
+"use client" // クライアントコンポーネント指定
 
-import { useEffect, useMemo, useState, use as usePromise } from "react"
-import { createClientBrowser } from "@/lib/supabase/client"
-import Button from "@/components/ui/Button"
-import Card from "@/components/ui/Card"
-import Skeleton from "@/components/ui/Skeleton"
+import { useEffect, useMemo, useState, use as usePromise } from "react" // Reactフック
+import { createClientBrowser } from "@/lib/supabase/client" // ブラウザ用Supabase
+import Button from "@/components/ui/Button" // ボタン
+import Card from "@/components/ui/Card" // カード
+import Skeleton from "@/components/ui/Skeleton" // スケルトン
 
-export default function TripSettingsPage({ params }: { params: Promise<{ tripId: string }> }) {
-  const { tripId } = usePromise(params)
-  const supabase = useMemo(() => createClientBrowser(), [])
+export default function TripSettingsPage({ params }: { params: Promise<{ tripId: string }> }) { // 設定ページ本体
+  const { tripId } = usePromise(params) // ルートパラメータからtripId取得
+  const supabase = useMemo(() => createClientBrowser(), []) // Supabaseクライアントをメモ化
 
-  const [title, setTitle] = useState("")
-  const [start, setStart] = useState("")
-  const [end, setEnd] = useState("")
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
+  const [title, setTitle] = useState("") // タイトル
+  const [start, setStart] = useState("") // 開始日
+  const [end, setEnd] = useState("") // 終了日
+  const [loading, setLoading] = useState(true) // 読込中
+  const [saving, setSaving] = useState(false) // 保存中
+  const [message, setMessage] = useState<string | null>(null) // メッセージ
 
-  useEffect(() => {
-    let alive = true
-    ;(async () => {
-      setLoading(true)
-      setMessage(null)
-      const { data, error } = await supabase
-        .from("trips")
-        .select("id, title, start_date, end_date")
-        .eq("id", tripId)
-        .maybeSingle()
-      if (!alive) return
-      if (error) {
-        setMessage(error.message)
-      } else if (data) {
-        setTitle(data.title ?? "")
-        setStart(data.start_date ?? "")
-        setEnd(data.end_date ?? "")
+  useEffect(() => { // 初期ロード
+    let alive = true // 生存フラグ
+    ;(async () => { // 即時非同期
+      setLoading(true) // 読込ON
+      setMessage(null) // メッセージ消去
+      const { data, error } = await supabase // データ取得
+        .from("trips") // テーブル
+        .select("id, title, start_date, end_date") // 必要カラム
+        .eq("id", tripId) // 絞り込み
+        .maybeSingle() // 0/1件
+      if (!alive) return // 中断時は戻る
+      if (error) { // エラーがあれば
+        setMessage(error.message) // メッセージ表示
+      } else if (data) { // 正常取得
+        setTitle(data.title ?? "") // タイトル設定
+        setStart(data.start_date ?? "") // 開始日設定
+        setEnd(data.end_date ?? "") // 終了日設定
       }
-      setLoading(false)
+      setLoading(false) // 読込OFF
     })()
-    return () => { alive = false }
-  }, [supabase, tripId])
+    return () => { alive = false } // クリーンアップ
+  }, [supabase, tripId]) // 依存
 
-  async function save() {
-    if (!title.trim()) { setMessage("タイトルを入力してください"); return }
-    setSaving(true)
-    setMessage(null)
-    const { error } = await supabase
-      .from("trips")
-      .update({ title: title.trim(), start_date: start || null, end_date: end || null })
-      .eq("id", tripId)
-    setSaving(false)
-    setMessage(error ? `保存に失敗しました: ${error.message}` : "保存しました")
+  async function save() { // 保存処理
+    if (!title.trim()) { setMessage("�^�C�g������͂��Ă�������"); return } // 必須チェック
+    setSaving(true) // 保存中ON
+    setMessage(null) // メッセージ消去
+    const { error } = await supabase // 更新クエリ
+      .from("trips") // テーブル
+      .update({ title: title.trim(), start_date: start || null, end_date: end || null }) // 更新値
+      .eq("id", tripId) // 対象
+    setSaving(false) // 保存中OFF
+    setMessage(error ? `�ۑ��Ɏ��s���܂���: ${error.message}` : "�ۑ����܂���") // 結果メッセージ
   }
 
-  return (
-    <section className="mx-auto w-full max-w-2xl space-y-6 p-4">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-bold">旅の設定</h1>
-        <p className="text-sm text-gray-600">tripId: {tripId}</p>
+  return ( // 描画
+    <section className="mx-auto w-full max-w-2xl space-y-6 p-4"> {/* コンテナ */}
+      <header className="space-y-1"> {/* ヘッダー */}
+        <h1 className="text-2xl font-bold">���̐ݒ�</h1> {/* タイトル */}
+        <p className="text-sm text-gray-600">tripId: {tripId}</p> {/* ID表示 */}
       </header>
 
-      {loading ? (
-        <Card>
+      {loading ? ( // ローディング表示
+        <Card> {/* スケルトン */}
           <Skeleton className="h-4 w-1/3" />
           <Skeleton className="mt-2 h-4 w-2/3" />
         </Card>
-      ) : (
+      ) : ( // 本文
         <>
-          <Card>
-            <form className="grid gap-3" onSubmit={(e) => { e.preventDefault(); save() }}>
-              <label className="grid gap-1 text-sm">
-                <span className="text-gray-600">タイトル</span>
+          <Card> {/* 基本情報フォーム */}
+            <form className="grid gap-3" onSubmit={(e) => { e.preventDefault(); save() }}> {/* 送信で保存 */}
+              <label className="grid gap-1 text-sm"> {/* タイトル */}
+                <span className="text-gray-600">�^�C�g��</span>
                 <input value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border px-3 py-2" />
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-3"> {/* 期間 */}
                 <label className="grid gap-1 text-sm">
-                  <span className="text-gray-600">開始日</span>
+                  <span className="text-gray-600">�J�n��</span>
                   <input type="date" value={start} onChange={(e) => setStart(e.target.value)} className="rounded-xl border px-3 py-2" />
                 </label>
                 <label className="grid gap-1 text-sm">
-                  <span className="text-gray-600">終了日</span>
+                  <span className="text-gray-600">�I����</span>
                   <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} className="rounded-xl border px-3 py-2" />
                 </label>
               </div>
-              <div className="flex items-center gap-2">
-                <Button type="submit" disabled={saving}>{saving ? "保存中…" : "保存"}</Button>
+              <div className="flex items-center gap-2"> {/* 操作 */}
+                <Button type="submit" disabled={saving}>{saving ? "�ۑ����c" : "�ۑ�"}</Button>
                 {message && <span className="text-xs text-gray-600">{message}</span>}
               </div>
             </form>
           </Card>
 
-          <Card title="危険な操作" description="旅のしおり全体を削除します。元に戻せません。">
-            <div className="flex items-center justify-between gap-3">
-              <div className="text-sm text-gray-700">旅のしおりを完全に削除</div>
+          <Card title="�댯�ȑ���" description="���̂�����S�̂��폜���܂��B���ɖ߂��܂���B"> {/* 危険操作 */}
+            <div className="flex items-center justify-between gap-3"> {/* 行 */}
+              <div className="text-sm text-gray-700">���̂���������S�ɍ폜</div> {/* 説明 */}
               <Button
-                variant="danger"
-                onClick={async () => {
-                  const ok = confirm('この旅のしおりを削除しますか？この操作は元に戻せません。')
-                  if (!ok) return
+                variant="danger" // 危険ボタン
+                onClick={async () => { // 削除処理
+                  const ok = confirm('���̗��̂�������폜���܂����H���̑���͌��ɖ߂��܂���B') // 確認
+                  if (!ok) return // 中断
                   try {
-                    const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}`, { method: 'DELETE' })
-                    if (!res.ok) throw new Error(await res.text())
-                    location.href = '/trips'
+                    const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}`, { method: 'DELETE' }) // API呼び出し
+                    if (!res.ok) throw new Error(await res.text()) // エラー
+                    location.href = '/trips' // 一覧へ
                   } catch { 
-                    alert('削除に失敗しました')
+                    alert('�폜�Ɏ��s���܂���') // 失敗通知
                   }
                 }}
               >
-                旅のしおりを削除
+                ���̂�������폜
               </Button>
             </div>
           </Card>
@@ -115,6 +116,4 @@ export default function TripSettingsPage({ params }: { params: Promise<{ tripId:
     </section>
   )
 }
-
-
 

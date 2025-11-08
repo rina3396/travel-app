@@ -1,364 +1,244 @@
-﻿"use client"
+// app/trips/new/page.tsx // 旅の新規作成ウィザード（クライアント）
+"use client" // クライアントコンポーネント
 
-import { useEffect, useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
-import { createBrowserClient } from "@supabase/ssr"
-import type { CreateTripRequest } from "@/types/trips"
-import Card from "@/components/ui/Card"
-import Button from "@/components/ui/Button"
+import { useEffect, useMemo, useState } from "react" // Reactフック
+import { useRouter } from "next/navigation" // ルーター
+import { createBrowserClient } from "@supabase/ssr" // Supabaseブラウザ
+import type { CreateTripRequest } from "@/types/trips" // 型
+import Card from "@/components/ui/Card" // カード
+import Button from "@/components/ui/Button" // ボタン
 
-type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6
+type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6 // ステップ型
 
-export default function TripNewPage() {
-  const router = useRouter()
+export default function TripNewPage() { // ページ本体
+  const router = useRouter() // ルーター
 
-  // 入力値
-  const [title, setTitle] = useState("")
-  const [startDate, setStartDate] = useState<string>("")
-  const [endDate, setEndDate] = useState<string>("")
-  const [participants, setParticipants] = useState<string[]>([])
-  const [participantInput, setParticipantInput] = useState<string>("")
-  const [budget, setBudget] = useState<string>("")
-  const [currency, setCurrency] = useState<string>("JPY")
-  const [isPublic, setIsPublic] = useState<boolean>(false)
+  // 入力値 // 各ステップの入力状態
+  const [title, setTitle] = useState("") // タイトル
+  const [startDate, setStartDate] = useState<string>("") // 開始日
+  const [endDate, setEndDate] = useState<string>("") // 終了日
+  const [participants, setParticipants] = useState<string[]>([]) // 参加者メール
+  const [participantInput, setParticipantInput] = useState<string>("") // 参加者入力
+  const [budget, setBudget] = useState<string>("") // 予算
+  const [currency, setCurrency] = useState<string>("JPY") // 通貨
+  const [isPublic, setIsPublic] = useState<boolean>(false) // 公開フラグ
 
-  // 進行状態
-  const [step, setStep] = useState<Step>(0)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [createdTripId, setCreatedTripId] = useState<string | null>(null)
+  // 進行 // ステップ・ロードなど
+  const [step, setStep] = useState<Step>(0) // 現在ステップ
+  const [loading, setLoading] = useState(false) // 通信中
+  const [error, setError] = useState<string | null>(null) // エラー
+  const [createdTripId, setCreatedTripId] = useState<string | null>(null) // 作成結果
 
   // Supabase ブラウザクライアント
   const supabase = useMemo(
-    () => createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!),
-    []
+    () => createBrowserClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!), // 環境変数から初期化
+    [] // 初回のみ
   )
 
-  // 未ログイン時は /auth/login へ
-  useEffect(() => {
-    let mounted = true
-    ;(async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (mounted && !session) router.replace("/auth/login")
+  // 認証未ログインなら /auth/login へ
+  useEffect(() => { // ガード
+    let mounted = true // マウントフラグ
+    ;(async () => { // 即時非同期
+      const { data: { session } } = await supabase.auth.getSession() // セッション取得
+      if (mounted && !session) router.replace("/auth/login") // 未ログインは遷移
     })()
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) router.replace("/auth/login")
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => { // 変更監視
+      if (!session) router.replace("/auth/login") // 未ログインは遷移
     })
-    return () => { mounted = false; sub.subscription.unsubscribe() }
+    return () => { mounted = false; sub.subscription.unsubscribe() } // クリーンアップ
   }, [router, supabase])
 
   // 参加者メールのバリデーション
-  const isValidEmail = (s: string) => /.+@.+\..+/.test(s.trim().toLowerCase())
-  const addParticipant = () => {
-    const email = participantInput.trim().toLowerCase()
-    if (!email) return
-    if (!isValidEmail(email)) { setError("メールアドレスの形式が正しくありません"); return }
-    if (participants.includes(email)) { setParticipantInput(""); return }
-    setParticipants((prev) => [...prev, email])
-    setParticipantInput("")
+  const isValidEmail = (s: string) => /.+@.+\..+/.test(s.trim().toLowerCase()) // 簡易
+  const addParticipant = () => { // 追加
+    const email = participantInput.trim().toLowerCase() // 正規化
+    if (!email) return // 空は無視
+    if (!isValidEmail(email)) { setError("���[���A�h���X�̌`��������������܂���"); return } // 検証
+    if (participants.includes(email)) { setParticipantInput(""); return } // 重複は無視
+    setParticipants((prev) => [...prev, email]) // 追加
+    setParticipantInput("") // クリア
   }
-  const removeParticipant = (email: string) => setParticipants((prev) => prev.filter((e) => e !== email))
+  const removeParticipant = (email: string) => setParticipants((prev) => prev.filter((e) => e !== email)) // 削除
 
-  // ステップごとの軽い入力チェック
-  const validateCurrentStep = (): string | null => {
+  // ステップごとの入力チェック
+  const validateCurrentStep = (): string | null => { // 検証
     if (step === 0) {
-      if (!title.trim()) return "タイトルを入力してください"
+      if (!title.trim()) return "�^�C�g������͂��Ă�������" // タイトル必須
     }
     if (step === 1) {
       if (startDate && endDate) {
         const s = new Date(startDate)
         const e = new Date(endDate)
-        if (s > e) return "開始日は終了日より前にしてください"
+        if (s > e) return "�J�n���͏I�������O�ɂ��Ă�������" // 期間の整合性
       }
     }
     if (step === 2) {
-      if (participantInput && !isValidEmail(participantInput)) return "参加者のメール形式が正しくありません"
+      if (participantInput && !isValidEmail(participantInput)) return "�Q���҂̃��[���`��������������܂���" // 参加者入力検証
     }
     if (step === 3) {
       if (budget) {
         const v = Number(budget)
-        if (!Number.isFinite(v) || v < 0) return "予算は0以上の数値で入力してください"
+        if (!Number.isFinite(v) || v < 0) return "�\�Z��0�ȏ�̐��l�œ��͂��Ă�������" // 予算輸入
       }
     }
-    return null
+    return null // OK
   }
 
-  const goNext = () => {
-    const v = validateCurrentStep()
-    if (v) { setError(v); return }
-    setError(null)
-    setStep((s) => (s < 6 ? (s + 1) as Step : s))
+  const goNext = () => { // 次へ
+    const v = validateCurrentStep() // 検証
+    if (v) { setError(v); return } // エラー
+    setError(null) // クリア
+    setStep((s) => (s < 6 ? (s + 1) as Step : s)) // 前進
   }
-  const goPrev = () => setStep((s) => (s > 0 ? (s - 1) as Step : s))
+  const goPrev = () => setStep((s) => (s > 0 ? (s - 1) as Step : s)) // 前へ
 
-  const submitCreate = async () => {
-    const v = validateCurrentStep()
-    if (v) { setError(v); return }
-    setLoading(true)
-    setError(null)
+  const submitCreate = async () => { // 作成送信
+    const v = validateCurrentStep() // 検証
+    if (v) { setError(v); return } // エラー
+    setLoading(true) // 読込ON
+    setError(null) // クリア
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.access_token
-      if (!token) { setError("未ログインです。先にログインしてください"); setLoading(false); return }
+      const { data: { session } } = await supabase.auth.getSession() // セッション
+      const token = session?.access_token // トークン
+      if (!token) { setError("�����O�C���ł��B��Ƀ��O�C�����Ă�������"); setLoading(false); return } // 未ログイン
 
-      const payload: CreateTripRequest = {
-        title: title.trim(),
-        startDate: startDate || null,
-        endDate: endDate || null,
-        participants: participants.length ? participants : undefined,
-        budget: budget ? { amount: Number(budget), currency } : undefined,
-        share: isPublic ? { public: true } : undefined,
+      const payload: CreateTripRequest = { // リクエスト
+        title: title.trim(), // タイトル
+        startDate: startDate || null, // 開始
+        endDate: endDate || null, // 終了
+        participants: participants.length ? participants : undefined, // 参加者
+        budget: budget ? { amount: Number(budget), currency } : undefined, // 予算
+        share: isPublic ? { public: true } : undefined, // 公開
       }
 
-      const res = await fetch("/api/trips/new", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(payload),
+      const res = await fetch("/api/trips/new", { // API
+        method: "POST", // POST
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, // ヘッダ
+        body: JSON.stringify(payload), // 本文
       })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data?.error || `HTTP ${res.status}`)
-      }
-      const { id } = await res.json()
-      setCreatedTripId(id)
-      setStep(6)
+      if (!res.ok) throw new Error(await res.text()) // エラー
+      const json = await res.json() as { id?: string } // 結果
+      const id = json?.id // ID
+      setCreatedTripId(id ?? null) // 保持
+      if (id) router.replace(`/trips/${encodeURIComponent(id)}`) // 詳細へ
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "作成に失敗しました")
+      setError(e instanceof Error ? e.message : "�쐬�Ɏ��s���܂���") // 失敗
     } finally {
-      setLoading(false)
+      setLoading(false) // 読込OFF
     }
   }
 
-  const StepHeader = () => (
-    <ol className="flex flex-wrap items-center gap-3 text-sm sm:text-base text-gray-600">
-      {[
-        { n: 0, label: "タイトル" },
-        { n: 1, label: "日付" },
-        { n: 2, label: "参加者" },
-        { n: 3, label: "予算" },
-        { n: 4, label: "共有" },
-        { n: 5, label: "確認" },
-        { n: 6, label: "完了" },
-      ].map(({ n, label }) => (
-        <li key={n} className={`flex items-center gap-1 ${step === n ? "font-semibold text-gray-900" : ""}`}>
-          <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full border ${step >= n ? "bg-orange-500 text-white border-orange-500" : "bg-white"}`}>
-            {n + 1}
-          </span>
-          <span>{label}</span>
-          {n < 6 && <span className="mx-1">›</span>}
-        </li>
-      ))}
-    </ol>
-  )
+  return ( // 描画
+    <section className="mx-auto w-full max-w-2xl space-y-6 p-4"> {/* コンテナ */}
+      <header className="space-y-1"> {/* ヘッダー */}
+        <h1 className="text-2xl font-bold">�V�K�쐬</h1> {/* タイトル */}
+        <p className="text-sm text-gray-600">ステップ: {step}</p> {/* 現在のステップ */}
+      </header>
 
-  return (
-    <section className="p-4 sm:p-6 pb-24 sm:pb-6 max-w-xl mx-auto space-y-6 sm:space-y-7 text-base">
-      <h1 className="text-lg font-semibold">旅の新規作成（ウィザード）</h1>
-      <StepHeader />
+      {error && <Card><div className="p-3 text-sm text-red-600">{error}</div></Card>} {/* エラー */}
 
+      {/* Step 0: タイトル */}
       {step === 0 && (
-        <Card title="タイトル" description="旅のタイトルを入力してください">
-          <div className="space-y-3">
-            <label className="flex flex-col gap-2 text-sm">
-              <span className="font-medium">タイトル</span>
-              <input type="text" placeholder="例）夏の温泉旅行" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-base placeholder-gray-400 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60" required />
-            </label>
-            <div className="flex items-center justify-end gap-2">
-              <Button size="md" onClick={goNext}>次へ</Button>
-            </div>
+        <Card>
+          <div className="grid gap-2 p-3"> {/* 入力 */}
+            <label className="text-xs text-gray-600">�^�C�g��</label>
+            <input value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border px-3 py-2 text-sm" placeholder="沖縄旅 2025 夏" />
           </div>
         </Card>
       )}
 
+      {/* Step 1: 期間 */}
       {step === 1 && (
-        <Card title="日付" description="開始日と終了日を設定してください">
-          <div className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <label className="flex flex-col gap-2 text-sm">
-                <span className="font-medium">開始日</span>
-                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-base focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60" />
-              </label>
-              <label className="flex flex-col gap-2 text-sm">
-                <span className="font-medium">終了日</span>
-                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} min={startDate || undefined} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-base focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60" />
-              </label>
+        <Card>
+          <div className="grid grid-cols-2 gap-3 p-3"> {/* 期間入力 */}
+            <div>
+              <label className="text-xs text-gray-600">�J�n��</label>
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full rounded-xl border px-3 py-2 text-sm" />
             </div>
-            <div className="flex items-center justify-between gap-2">
-              <Button size="md" onClick={goPrev} variant="outline">戻る</Button>
-              <Button size="md" onClick={goNext}>次へ</Button>
+            <div>
+              <label className="text-xs text-gray-600">�I����</label>
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full rounded-xl border px-3 py-2 text-sm" />
             </div>
           </div>
         </Card>
       )}
 
+      {/* Step 2: 参加者 */}
       {step === 2 && (
-        <Card title="参加者" description="メールアドレスを追加（任意）">
-          <div className="space-y-3 text-sm">
-            <label className="flex flex-col gap-2">
-              <span className="font-medium">参加者メール</span>
-              <div className="grid grid-cols-[1fr_auto] items-center gap-2">
-                <input type="email" placeholder="you@example.com" value={participantInput} onChange={(e) => setParticipantInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addParticipant() } }} className="h-10 w-full rounded-lg border border-gray-200 px-3 text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60" />
-                <Button onClick={addParticipant} type="button" variant="outline"  className="h-10 px-3">追加</Button>
-              </div>
-            </label>
-            {!!participants.length && (
-              <ul className="flex flex-wrap gap-2">
-                {participants.map((email) => (
-                  <li key={email} className="flex items-center gap-2 rounded border px-2 py-1">
-                    <span className="font-mono">{email}</span>
-                    <button onClick={() => removeParticipant(email)} className="text-xs text-red-600">削除</button>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <div className="flex items-center justify-between gap-2">
-              <Button size="md" onClick={goPrev} variant="outline">戻る</Button>
-              <Button size="md" onClick={goNext}>次へ</Button>
+        <Card>
+          <div className="grid gap-3 p-3"> {/* 入力 */}
+            <div className="grid grid-cols-3 gap-2"> {/* メール入力 */}
+              <input type="email" value={participantInput} onChange={(e) => setParticipantInput(e.target.value)} className="col-span-2 rounded-xl border px-3 py-2 text-sm" placeholder="friend@example.com" />
+              <Button onClick={addParticipant} type="button" variant="outline">追加</Button>
             </div>
+            <ul className="flex flex-wrap gap-2"> {/* 参加者一覧 */}
+              {participants.map((mail) => (
+                <li key={mail} className="inline-flex items-center gap-2 rounded-full border px-2 py-1 text-xs"> {/* ピル */}
+                  <span className="truncate max-w-48">{mail}</span>
+                  <Button size="xs" variant="outline" onClick={() => removeParticipant(mail)}>削除</Button>
+                </li>
+              ))}
+            </ul>
           </div>
         </Card>
       )}
 
+      {/* Step 3: 予算 */}
       {step === 3 && (
-        <Card title="予算" description="金額と通貨を設定（任意）">
-          <div className="space-y-3 text-sm">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <label className="flex flex-col gap-2 sm:col-span-2">
-                <span className="font-medium">予算</span>
-                <input type="number" min={0} step={100} value={budget} onChange={(e) => setBudget(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-base focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60" placeholder="例）30000" />
-              </label>
-              <label className="flex flex-col gap-2">
-                <span className="font-medium">通貨</span>
-                <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 bg-white text-sm focus:border-orange-400 focus:ring-2 focus:ring-orange-200/60">
-                  <option value="JPY">JPY</option>
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                </select>
-              </label>
+        <Card>
+          <div className="grid grid-cols-3 gap-3 p-3"> {/* 入力 */}
+            <div className="col-span-2">
+              <label className="text-xs text-gray-600">予算</label>
+              <input value={budget} onChange={(e) => setBudget(e.target.value)} type="number" min={0} className="w-full rounded-xl border px-3 py-2 text-sm" />
             </div>
-            <div className="flex items-center justify-between gap-2">
-              <Button size="md" onClick={goPrev} variant="outline">戻る</Button>
-              <Button size="md" onClick={goNext}>次へ</Button>
+            <div>
+              <label className="text-xs text-gray-600">通貨</label>
+              <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="w-full rounded-xl border bg-white px-3 py-2 text-sm">
+                <option value="JPY">JPY</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+              </select>
             </div>
           </div>
         </Card>
       )}
 
+      {/* Step 4: 公開設定 */}
       {step === 4 && (
-        <Card title="共有" description="リンク共有の有効/無効を設定">
-          <div className="space-y-3 text-sm">
-            <label className="inline-flex items-center gap-2">
-              <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
-              <span>リンク共有を有効にする</span>
-            </label>
-            <div className="flex items-center justify-between gap-2">
-              <Button size="md" onClick={goPrev} variant="outline">戻る</Button>
-              <Button size="md" onClick={goNext}>次へ</Button>
-            </div>
+        <Card>
+          <div className="flex items-center justify-between p-3"> {/* トグル */}
+            <div className="text-sm">公開リンクを作成（誰でも閲覧可）</div>
+            <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
           </div>
         </Card>
       )}
 
+      {/* Step 5: 確認 */}
       {step === 5 && (
-        <Card title="確認" description="内容を確認して作成します">
-          <div className="space-y-3 text-sm">
-            <dl className="grid grid-cols-2 gap-2">
-              <div className="flex justify-between gap-3">
-                <dt className="text-gray-600">タイトル</dt>
-                <dd className="text-gray-900">{title || "(未設定)"}</dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-gray-600">開始日</dt>
-                <dd className="text-gray-900">{startDate || "(未設定)"}</dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-gray-600">終了日</dt>
-                <dd className="text-gray-900">{endDate || "(未設定)"}</dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-gray-600">参加者</dt>
-                <dd className="text-gray-900">{participants.length ? participants.join(", ") : "(なし)"}</dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-gray-600">予算</dt>
-                <dd className="text-gray-900">{budget ? `${Number(budget).toLocaleString()} ${currency}` : "(未設定)"}</dd>
-              </div>
-              <div className="flex justify-between gap-3">
-                <dt className="text-gray-600">共有設定</dt>
-                <dd className="text-gray-900">{isPublic ? "リンク共有 有効" : "リンク共有 無効"}</dd>
-              </div>
-            </dl>
-            <div className="flex items-center justify-between gap-2 pt-2">
-              <Button size="md" onClick={goPrev} variant="outline">戻る</Button>
-              <Button size="md" onClick={submitCreate} disabled={loading}>{loading ? "作成中…" : "作成する"}</Button>
-            </div>
+        <Card>
+          <div className="grid gap-2 p-3 text-sm"> {/* 概要 */}
+            <div>タイトル: {title || '（未設定）'}</div>
+            <div>期間: {(startDate || '未設定')} - {(endDate || '未設定')}</div>
+            <div>参加者: {participants.length ? participants.join(', ') : '（なし）'}</div>
+            <div>予算: {budget ? `${budget} ${currency}` : '（未設定）'}</div>
+            <div>公開: {isPublic ? 'はい' : 'いいえ'}</div>
           </div>
         </Card>
       )}
 
+      {/* Step 6: 完了 */}
       {step === 6 && (
-        <div className="space-y-4 text-sm">
-          <Card className="border-green-200 bg-green-50">
-            <p className="font-medium text-green-800">作成が完了しました。</p>
-            {createdTripId && <p className="mt-1">ID: <span className="font-mono">{createdTripId}</span></p>}
-          </Card>
-          <div className="flex items-center justify-end gap-2">
-            <Button onClick={() => createdTripId ? router.push(`/trips/${encodeURIComponent(createdTripId)}`) : router.push("/trips")}>
-              ダッシュボード
-            </Button>
-          </div>
-        </div>
+        <Card>
+          <div className="p-3 text-sm">作成完了。{createdTripId ? `ID: ${createdTripId}` : ''}</div>
+        </Card>
       )}
 
-      {step === 6 && createdTripId && (
-        <div className="space-y-3 text-sm">
-          <p className="text-gray-700">各機能ページへ移動できます。</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            <Button className="w-full" variant="primary" onClick={() => router.push(`/trips/${encodeURIComponent(createdTripId)}/preview`)}>プレビュー</Button>
-            <Button className="w-full" variant="outline" onClick={() => router.push(`/trips/${encodeURIComponent(createdTripId)}/days`)}>日程</Button>
-            <Button className="w-full" variant="outline" onClick={() => router.push(`/trips/${encodeURIComponent(createdTripId)}/budget`)}>予算・費用</Button>
-            <Button className="w-full" variant="outline" onClick={() => router.push(`/trips/${encodeURIComponent(createdTripId)}/tasks`)}>タスク</Button>
-            <Button className="w-full" variant="outline" onClick={() => router.push(`/trips/${encodeURIComponent(createdTripId)}/share`)}>共有</Button>
-            <Button className="w-full" variant="outline" onClick={() => router.push(`/trips/${encodeURIComponent(createdTripId)}/settings`)}>設定</Button>
-          </div>
-        </div>
-      )}
-
-      {error && (
-        <Card className="border-rose-200 bg-rose-50 text-rose-700"><p className="text-sm">{error}</p></Card>
-      )}
-
-      {(step >= 0 && step <= 5) && (
-        <div
-          className="sm:hidden fixed inset-x-0 bottom-0 z-40 border-t bg-white/95 supports-backdrop-blur:backdrop-blur"
-          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 4px)' }}
-        >
-          <div className="mx-auto max-w-lg px-4 py-2 flex items-center justify-between gap-2">
-            <Button size="md" onClick={goPrev} variant="outline" disabled={step === 0}>戻る</Button>
-            {step < 5 ? (
-              <Button size="md" onClick={goNext} disabled={loading}>次へ</Button>
-            ) : (
-              <Button size="md" onClick={submitCreate} disabled={loading}>{loading ? '作成中…' : '作成する'}</Button>
-            )}
-          </div>
-        </div>
-      )}
+      <div className="flex items-center justify-between"> {/* ナビゲーション */}
+        <Button variant="outline" onClick={goPrev} disabled={step === 0 || loading}>戻る</Button>
+        {step < 5 && <Button onClick={goNext} disabled={loading}>次へ</Button>}
+        {step === 5 && <Button onClick={submitCreate} disabled={loading}>作成</Button>}
+      </div>
     </section>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

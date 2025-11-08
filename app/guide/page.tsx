@@ -1,45 +1,46 @@
-// app/guide/page.tsx
-import Card from "@/components/ui/Card"
-import Button from "@/components/ui/Button"
-import BackButton from "@/components/ui/BackButton"
+// app/guide/page.tsx // 使い方ガイドページ
+import Card from "@/components/ui/Card" // カードUIコンポーネント
+import Button from "@/components/ui/Button" // ボタンコンポーネント
+import BackButton from "@/components/ui/BackButton" // 戻るボタン
 
-export default function GuidePage() {
-  return (
-    <section className="mx-auto w-full max-w-2xl space-y-6 p-4">
-      <div>
-        <BackButton label="戻る" />
+export default function GuidePage() { // ガイドページコンポーネント
+  return ( // コンテンツの描画
+    <section className="mx-auto w-full max-w-2xl space-y-6 p-4"> {/* 幅・余白調整済みセクション */}
+      <div> {/* 戻るボタンのラッパー */}
+        <BackButton label="�߂�" /> {/* 戻る */}
       </div>
-      <header className="space-y-1">
-        <h1 className="text-2xl font-bold">使い方</h1>
-        <p className="text-sm text-gray-600">このアプリの操作方法をまとめています。</p>
+      <header className="space-y-1"> {/* ヘッダー領域 */}
+        <h1 className="text-2xl font-bold">�g����</h1> {/* タイトル */}
+        <p className="text-sm text-gray-600">���̃A�v���̑�����@���܂Ƃ߂Ă��܂��B</p> {/* 概要説明 */}
       </header>
 
-      <Card title="はじめに" description="旅を作成してダッシュボードから各機能へ移動します。">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-700">新規作成ボタンから、旅のしおりを作成できます。</div>
-          <Button href="/trips/new">新規作成</Button>
+      <Card title="�͂��߂�" description="�����쐬���ă_�b�V���{�[�h����e�@�\�ֈړ����܂��B"> {/* はじめにカード */}
+        <div className="flex items-center justify-between"> {/* 横並び */}
+          <div className="text-sm text-gray-700">�V�K�쐬�{�^������A���̂�������쐬�ł��܂��B</div> {/* 説明文 */}
+          <Button href="/trips/new">�V�K�쐬</Button> {/* 新規作成ボタン */}
         </div>
       </Card>
 
-      <Card title="旅の一覧" description="作成済みの旅を確認できます。">
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-700">旅の一覧ボタンから、作成した旅のしおりを開くことができます。</div>
-          <Button href="/trips" variant="outline">旅の一覧</Button>
+      <Card title="���̈ꗗ" description="�쐬�ς݂̗����m�F�ł��܂��B"> {/* 一覧カード */}
+        <div className="flex items-center justify-between"> {/* 横並び */}
+          <div className="text-sm text-gray-700">���̈ꗗ�{�^������A�쐬�������̂�������J�����Ƃ��ł��܂��B</div> {/* 説明文 */}
+          <Button href="/trips" variant="outline">���̈ꗗ</Button> {/* 一覧ボタン */}
         </div>
       </Card>
 
-      <Card title="主な機能" description="ダッシュボードから各ページに移動して編集します。">
-        <ul className="list-disc space-y-1 pl-5 text-sm text-gray-700">
-          <li>日程: 日付ごとの予定を管理します。</li>
-          <li>アクティビティ: 立ち寄り先や予定を追加します。</li>
-          <li>予算・費用: 支出を登録し合計を確認します。</li>
-          <li>TODO・持ち物: 準備や荷物のチェックリストです。</li>
-          <li>共有: 旅のリンクを共有します。</li>
-          <li>プレビュー: 作成した旅のしおり閲覧、出力ができます。</li>
+      <Card title="��ȋ@�\" description="�_�b�V���{�[�h����e�y�[�W�Ɉړ����ĕҏW���܂��B"> {/* 機能紹介カード */}
+        <ul className="list-disc space-y-1 pl-5 text-sm text-gray-700"> {/* 箇条書き */}
+          <li>����: ���t���Ƃ̗\����Ǘ����܂��B</li> {/* 旅行情報 */}
+          <li>�A�N�e�B�r�e�B: ���������\���ǉ����܂��B</li> {/* アクティビティ */}
+          <li>�\�Z�E��p: �x�o��o�^�����v���m�F���܂��B</li> {/* 予算管理 */}
+          <li>TODO�E������: ������ו��̃`�F�b�N���X�g�ł��B</li> {/* タスク管理 */}
+          <li>���L: ���̃����N�����L���܂��B</li> {/* 設定 */}
+          <li>�v���r���[: �쐬�������̂�����{���A�o�͂��ł��܂��B</li> {/* プレビュー/共有 */}
         </ul>
       </Card>
 
-      {/* <footer className="pt-2 text-center text-xs text-gray-500">このガイドは随時更新されます。</footer> */}
+      {/* <footer className="pt-2 text-center text-xs text-gray-500">���̃K�C�h�͐����X�V����܂��B</footer> */} {/* フッター（未使用） */}
     </section>
   )
 }
+

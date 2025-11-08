@@ -1,36 +1,36 @@
-// app/loading.tsx
-import Skeleton from "@/components/ui/Skeleton"
-import Card from "@/components/ui/Card"
+// app/loading.tsx // ルート配下のローディングUI
+import Skeleton from "@/components/ui/Skeleton" // ローディング用のスケルトンコンポーネント
+import Card from "@/components/ui/Card" // カードUIコンポーネント
 
-export default function Loading() {
-  return (
-    <section className="space-y-6 p-4">
-      <header className="space-y-2">
-        <Skeleton className="h-7 w-40" />
-        <Skeleton className="h-4 w-64" />
+export default function Loading() { // ローディング表示コンポーネント
+  return ( // コンテンツの描画
+    <section className="space-y-6 p-4"> {/* 余白とパディングを設定したセクション */}
+      <header className="space-y-2"> {/* ヘッダー領域（行間を確保） */}
+        <Skeleton className="h-7 w-40" /> {/* タイトル用スケルトン */}
+        <Skeleton className="h-4 w-64" /> {/* サブタイトル用スケルトン */}
       </header>
 
-      <Card>
-        <div className="grid gap-2">
-          <Skeleton className="h-4 w-1/3" />
-          <Skeleton className="h-4 w-2/3" />
-          <Skeleton className="h-4 w-1/2" />
+      <Card> {/* 1枚目のカード */}
+        <div className="grid gap-2"> {/* 要素間の間隔を持つグリッド */}
+          <Skeleton className="h-4 w-1/3" /> {/* 短いテキスト行 */}
+          <Skeleton className="h-4 w-2/3" /> {/* やや長いテキスト行 */}
+          <Skeleton className="h-4 w-1/2" /> {/* 中程度のテキスト行 */}
         </div>
       </Card>
 
-      <Card>
-        <div className="grid gap-2">
-          <Skeleton className="h-4 w-1/4" />
-          <Skeleton className="h-4 w-3/5" />
-          <Skeleton className="h-4 w-1/3" />
+      <Card> {/* 2枚目のカード */}
+        <div className="grid gap-2"> {/* 要素間の間隔を持つグリッド */}
+          <Skeleton className="h-4 w-1/4" /> {/* 短いテキスト行 */}
+          <Skeleton className="h-4 w-3/5" /> {/* やや長いテキスト行 */}
+          <Skeleton className="h-4 w-1/3" /> {/* 中程度のテキスト行 */}
         </div>
       </Card>
 
-      <Card>
-        <div className="grid gap-2">
-          <Skeleton className="h-4 w-1/2" />
-          <Skeleton className="h-4 w-2/5" />
-          <Skeleton className="h-4 w-1/4" />
+      <Card> {/* 3枚目のカード */}
+        <div className="grid gap-2"> {/* 要素間の間隔を持つグリッド */}
+          <Skeleton className="h-4 w-1/2" /> {/* 中程度のテキスト行 */}
+          <Skeleton className="h-4 w-2/5" /> {/* やや短いテキスト行 */}
+          <Skeleton className="h-4 w-1/4" /> {/* 短いテキスト行 */}
         </div>
       </Card>
     </section>

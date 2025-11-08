@@ -1,25 +1,25 @@
-"use client"
+"use client" // クライアントコンポーネント
 
-import { useEffect, useState, use as usePromise } from "react"
-import { useRouter } from "next/navigation"
-import type { DbActivity } from "@/types/trips"
-import Card from "@/components/ui/Card"
-import Button from "@/components/ui/Button"
-import Skeleton from "@/components/ui/Skeleton"
+import { useEffect, useState, use as usePromise } from "react" // Reactフック
+import { useRouter } from "next/navigation" // ルーター
+import type { DbActivity } from "@/types/trips" // 型
+import Card from "@/components/ui/Card" // カード
+import Button from "@/components/ui/Button" // ボタン
+import Skeleton from "@/components/ui/Skeleton" // スケルトン
 
 // use shared DbActivity type
 
-export default function ActivityDetailPage({ params }: { params: Promise<{ tripId: string; activityId: string }> }) {
-  const { tripId, activityId } = usePromise(params)
-  const router = useRouter()
+export default function ActivityDetailPage({ params }: { params: Promise<{ tripId: string; activityId: string }> }) { // 詳細ページ
+  const { tripId, activityId } = usePromise(params) // パラメータ
+  const router = useRouter() // ルーター
 
-  const [item, setItem] = useState<DbActivity | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [saved, setSaved] = useState(false)
+  const [item, setItem] = useState<DbActivity | null>(null) // 現在値
+  const [loading, setLoading] = useState(true) // ロード中
+  const [saving, setSaving] = useState(false) // 保存中
+  const [error, setError] = useState<string | null>(null) // エラー
+  const [saved, setSaved] = useState(false) // 保存完了表示
 
-  useEffect(() => {
+  useEffect(() => { // 初期読込
     let alive = true
     ;(async () => {
       setLoading(true)
@@ -32,7 +32,7 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ tripI
     return () => { alive = false }
   }, [tripId, activityId])
 
-  async function save() {
+  async function save() { // 保存
     if (!item) return
     setSaving(true)
     setError(null)
@@ -56,7 +56,7 @@ export default function ActivityDetailPage({ params }: { params: Promise<{ tripI
     setTimeout(() => setSaved(false), 2000)
   }
 
-  async function remove() {
+  async function remove() { // 削除
     const ok = confirm("このアクティビティを削除しますか？")
     if (!ok) return
     const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}/activities/${encodeURIComponent(activityId)}`, { method: "DELETE" })

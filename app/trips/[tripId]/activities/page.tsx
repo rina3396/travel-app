@@ -1,15 +1,16 @@
-"use client"
+"use client" // クライアントコンポーネント
 
-import { useEffect, useMemo, useState, use as usePromise } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
-import Link from "next/link"
-import Button from "@/components/ui/Button"
-import Card from "@/components/ui/Card"
-import Skeleton from "@/components/ui/Skeleton"
-import type { Activity, DbActivity } from "@/types/trips"
+// app/trips/[tripId]/activities/page.tsx // アクティビティ一覧と追加フォーム
+import { useEffect, useMemo, useState, use as usePromise } from "react" // Reactフック
+import { useSearchParams, useRouter } from "next/navigation" // 検索パラメータ/ルーター
+import Link from "next/link" // リンク
+import Button from "@/components/ui/Button" // ボタン
+import Card from "@/components/ui/Card" // カード
+import Skeleton from "@/components/ui/Skeleton" // スケルトン
+import type { Activity, DbActivity } from "@/types/trips" // 型
 
-// Map DB row to UI Activity
-function toActivity(x: DbActivity): Activity {
+// Map DB row to UI Activity // DB行→表示用の変換
+function toActivity(x: DbActivity): Activity { // 変換関数
   return {
     id: x.id,
     tripId: x.trip_id,
@@ -23,21 +24,21 @@ function toActivity(x: DbActivity): Activity {
   }
 }
 
-export default function ActivitiesPage({ params }: { params: Promise<{ tripId: string }> }) {
-  const { tripId } = usePromise(params)
-  const search = useSearchParams()
-  const router = useRouter()
-  const targetDate = search.get("date") || undefined
+export default function ActivitiesPage({ params }: { params: Promise<{ tripId: string }> }) { // ページ本体
+  const { tripId } = usePromise(params) // ルートパラメータ
+  const search = useSearchParams() // クエリ
+  const router = useRouter() // ルーター
+  const targetDate = search.get("date") || undefined // 対象日付（任意）
 
-  const [items, setItems] = useState<Activity[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [items, setItems] = useState<Activity[]>([]) // 一覧
+  const [loading, setLoading] = useState(true) // ロード中
+  const [error, setError] = useState<string | null>(null) // エラー
 
-  const [tripStart, setTripStart] = useState<string | null>(null)
-  const [tripEnd, setTripEnd] = useState<string | null>(null)
-  const [dayId, setDayId] = useState<string | null>(null)
+  const [tripStart, setTripStart] = useState<string | null>(null) // 旅行開始
+  const [tripEnd, setTripEnd] = useState<string | null>(null) // 旅行終了
+  const [dayId, setDayId] = useState<string | null>(null) // 対象日のdayId
 
-  // Load activities
+  // Load activities // アクティビティ一覧の読込
   useEffect(() => {
     let abort = false
     ;(async () => {
@@ -57,7 +58,7 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
     return () => { abort = true }
   }, [tripId])
 
-  // Load trip period
+  // Load trip period // 旅行期間の取得
   useEffect(() => {
     let abort = false
     ;(async () => {
@@ -75,7 +76,7 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
     return () => { abort = true }
   }, [tripId])
 
-  // Ensure day for targetDate and get its id
+  // Ensure day for targetDate and get its id // 対象日のdayレコードを確保
   useEffect(() => {
     let abort = false
     ;(async () => {
@@ -97,17 +98,17 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
     return () => { abort = true }
   }, [tripId, targetDate])
 
-  // Derived view
+  // Derived view // 表示用の並び替え/フィルタ
   const viewItems = useMemo(() => {
     const arr = targetDate && dayId ? items.filter(a => a.dayId === dayId) : items
     return [...arr].sort((a, b) => (a.startTime || "").localeCompare(b.startTime || ""))
   }, [items, targetDate, dayId])
 
-  // Form state
-  const [title, setTitle] = useState("")
-  const [startTime, setStartTime] = useState("")
-  const [location, setLocation] = useState("")
-  const canSubmit = useMemo(() => title.trim().length > 0, [title])
+  // Form state // 追加フォームの状態
+  const [title, setTitle] = useState("") // タイトル
+  const [startTime, setStartTime] = useState("") // 開始時刻
+  const [location, setLocation] = useState("") // 場所
+  const canSubmit = useMemo(() => title.trim().length > 0, [title]) // 入力可否
 
   async function addActivity(e: React.FormEvent) {
     e.preventDefault()
