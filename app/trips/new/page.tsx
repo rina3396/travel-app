@@ -175,7 +175,7 @@ export default function TripNewPage() {
               {participants.map((mail) => (
                 <li key={mail} className="inline-flex items-center gap-2 rounded-full border px-2 py-1 text-xs">
                   <span className="truncate max-w-48">{mail}</span>
-                  <Button size="xs" variant="outline" onClick={() => removeParticipant(mail)}>削除</Button>
+                  <Button size="sm" variant="outline" onClick={() => removeParticipant(mail)}>削除</Button>
                 </li>
               ))}
             </ul>
@@ -241,4 +241,5 @@ export default function TripNewPage() {
     </section>
   )
 }
+
 

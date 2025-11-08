@@ -6,14 +6,12 @@ import Link from "next/link"
 import Button from "@/components/ui/Button"
 import Card from "@/components/ui/Card"
 import Skeleton from "@/components/ui/Skeleton"
-import type { Participant, Expense, DbExpense } from "@/types/trips"
+import type { Expense, DbExpense } from "@/types/trips"
 
 export default function BudgetPage({ params }: { params: Promise<{ tripId: string }> }) {
   const { tripId } = usePromise(params)
 
-  const [_members, _setMembers] = useState<Participant[]>([])
   const [items, setItems] = useState<Expense[]>([])
-  const [_budget, _setBudget] = useState<{ amount: number; currency: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -32,9 +30,7 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
         const ms = await fetch(`/api/trips/${encodeURIComponent(tripId)}/budget/expenses`, { cache: "no-store" })
         if (!ms.ok) throw new Error(await ms.text())
         const expRows = await ms.json()
-        const mem: Participant[] = []
         setItems(Array.isArray(expRows) ? (expRows as DbExpense[]).map(toExpense) : [])
-        setPaidBy(mem[0]?.id ?? "")
       } catch (e: unknown) {
         if (!alive) return
         setError(e instanceof Error ? e.message : "取得に失敗しました")
@@ -205,4 +201,3 @@ function labelOfCategory(cat: Expense["category"]) {
 function formatJPY(v: number) {
   return new Intl.NumberFormat("ja-JP").format(Math.round(v))
 }
-

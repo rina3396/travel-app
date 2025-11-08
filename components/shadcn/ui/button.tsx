@@ -49,8 +49,9 @@ export function Button({
     .filter(Boolean)
     .join(" ")
   if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement<any>, {
-      className: [cls, (children as any).props?.className].filter(Boolean).join(" "),
+    const el = children as React.ReactElement<{ className?: string }>
+    return React.cloneElement(el, {
+      className: [cls, el.props?.className].filter(Boolean).join(" "),
     })
   }
   return (

@@ -47,12 +47,12 @@ export type Database = {
         Relationships: []
       }
     }
-    Views: {}
-    Functions: {}
+    Views: Record<string, never>
+    Functions: Record<string, never>
     Enums: {
       member_role: ['owner','editor','viewer']
     }
-    CompositeTypes: {}
+    CompositeTypes: Record<string, never>
   }
 }
 

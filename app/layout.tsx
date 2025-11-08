@@ -1,4 +1,4 @@
-// app/layout.tsx // アプリのルートレイアウトファイル
+import Link from 'next/link'
 import "@/styles/globals.css" // グローバルCSSを読み込む
 import type { Metadata } from "next" // Next.js のメタデータ型をインポート
 import AppHeader from "@/components/layout/AppHeader" // 共通ヘッダーコンポーネント
@@ -27,9 +27,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <FloatingBackButton className="hidden sm:flex" href="/trips" /> {/* フローティング戻るボタン */}
 
         {process.env.NODE_ENV !== 'production' && ( /* 本番以外の環境でLPへのリンクを表示 */
-          <a href="/" className="fixed bottom-4 right-4 z-[60] rounded-md border bg-white px-3 py-2 text-xs shadow"> {/* LPへの固定リンク */}
+          <Link href="/" className="fixed bottom-4 right-4 z-[60] rounded-md border bg-white px-3 py-2 text-xs shadow"> {/* LPへの固定リンク */}
             Go LP {/* リンクテキスト */}
-          </a>
+          </Link>
         )}
 
         <AppFooter /> {/* アプリ共通のフッター */}
@@ -37,4 +37,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   )
 }
+
+
 
