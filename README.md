@@ -59,7 +59,7 @@
 |ダッシュボード| `/trips/[tripId]` | ダッシュボード（各機能画面へのハブ） |
 |アクティビティ一覧| `/trips/[tripId]/activities` | 行程の一覧・作成・編集・並べ替え |
 |アクティビティ詳細| `/trips/[tripId]/activities/[activityId]` | 個別行程の詳細/編集 |
-|日別編集| `/trips/[tripId]/days` | 日付単位の計画管理 |
+|日別設定| `/trips/[tripId]/days` | 日付単位の計画管理 |
 |TODO・持ち物| `/trips/[tripId]/tasks` | タスク・持ち物の一覧・作成・更新・削除 |
 |予算・費用| `/trips/[tripId]/budget` | 予算と支出の表示・支出登録 |
 |共有| `/trips/[tripId]/share` | メンバー招待・権限設定・共有リンク管理 |
