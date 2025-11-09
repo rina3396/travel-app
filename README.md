@@ -37,8 +37,14 @@
 - NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 ## テスト用アカウント
-- メールアドレス: `test@example.com`
-- パスワード: `pw0rd1111`
+- メールアドレス 
+  ```
+  test@example.com
+  ```
+- パスワード
+  ```
+  pw0rd1111
+  ```
 
 データは `lib/supabase/sql/dev_seed.sql` を使用しています。
 
