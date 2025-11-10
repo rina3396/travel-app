@@ -38,10 +38,10 @@ export default function TripNewPage() {
   // 未認証なら /auth/login へ
   useEffect(() => {
     let mounted = true
-    ;(async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (mounted && !session) router.replace("/auth/login")
-    })()
+      ; (async () => {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (mounted && !session) router.replace("/auth/login")
+      })()
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) router.replace("/auth/login")
     })
@@ -128,9 +128,37 @@ export default function TripNewPage() {
     }
   }
 
+  const StepHeader = () => (
+    <ol className="flex flex-wrap items-center gap-2 text-xs text-gray-600">
+      {[
+        { n: 0, label: "基本情報" },
+        { n: 1, label: "期間" },
+        { n: 2, label: "参加者" },
+        { n: 3, label: "予算" },
+        { n: 4, label: "共有設定" },
+        { n: 5, label: "確認" },
+        { n: 6, label: "完了" },
+      ].map(({ n, label }) => (
+        <li key={n} className={`flex items-center gap-1 ${step === n ? "font-semibold text-gray-900" : ""}`}>
+          <span
+            className={`inline-flex h-6 w-6 items-center justify-center rounded-full border text-[11px] ${step >= n
+              ? "bg-orange-500 text-white border-orange-500"
+              : "bg-white text-gray-500 border-gray-300"
+              }`}
+          >
+            {n + 1}
+          </span>
+          <span>{label}</span>
+          {n < 6 && <span className="mx-1">›</span>}
+        </li>
+      ))}
+    </ol>
+  )
+
   return (
     <section className="mx-auto w-full max-w-2xl space-y-6 p-4">
-      <header className="space-y-1">
+      <header className="space-y-2 wizard-header">
+        <StepHeader />
         <h1 className="text-2xl font-bold">新規作成</h1>
         <p className="text-sm text-gray-600">ステップ: {step}</p>
       </header>
@@ -142,7 +170,7 @@ export default function TripNewPage() {
         <Card>
           <div className="grid gap-2 p-3">
             <label className="text-xs text-gray-600">タイトル</label>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border px-3 py-2 text-sm" placeholder="家族旅行 2025 年" />
+            <input value={title} onChange={(e) => setTitle(e.target.value)} className="rounded-xl border px-3 py-2 text-sm" placeholder="旅のしおりのタイトルを入力してください" />
           </div>
         </Card>
       )}
@@ -168,7 +196,8 @@ export default function TripNewPage() {
         <Card>
           <div className="grid gap-3 p-3">
             <div className="grid grid-cols-3 gap-2">
-              <input type="email" value={participantInput} onChange={(e) => setParticipantInput(e.target.value)} className="col-span-2 rounded-xl border px-3 py-2 text-sm" placeholder="friend@example.com" />
+              <label className="text-xs text-gray-600 col-span-3">参加者のメールアドレス</label>
+              <input type="email" value={participantInput} onChange={(e) => setParticipantInput(e.target.value)} className="col-span-2 rounded-xl border px-3 py-2 text-sm" placeholder="参加者のメールアドレスを入力してください" />
               <Button onClick={addParticipant} type="button" variant="outline">追加</Button>
             </div>
             <ul className="flex flex-wrap gap-2">
@@ -189,7 +218,7 @@ export default function TripNewPage() {
           <div className="grid grid-cols-3 gap-3 p-3">
             <div className="col-span-2">
               <label className="text-xs text-gray-600">予算</label>
-              <input value={budget} onChange={(e) => setBudget(e.target.value)} type="number" min={0} className="w-full rounded-xl border px-3 py-2 text-sm" />
+              <input value={budget} onChange={(e) => setBudget(e.target.value)} type="number" min={0} className="w-full rounded-xl border px-3 py-2 text-sm" placeholder="予算を入力してください" />
             </div>
             <div>
               <label className="text-xs text-gray-600">通貨</label>
@@ -238,6 +267,9 @@ export default function TripNewPage() {
         {step < 5 && <Button onClick={goNext} disabled={loading}>次へ</Button>}
         {step === 5 && <Button onClick={submitCreate} disabled={loading}>作成</Button>}
       </div>
+      <style jsx>{`
+        .wizard-header > p.text-sm.text-gray-600 { display: none; }
+      `}</style>
     </section>
   )
 }

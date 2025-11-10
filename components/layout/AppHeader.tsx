@@ -13,7 +13,7 @@ export default function AppHeader() {
   const supabase = useMemo(() => createClientBrowser(), [])
   const [menuOpen, setMenuOpen] = useState(false)
 
-  // 認証ページではヘッダー非表示
+  // ログインページではヘッダー非表示にする
   if (pathname?.startsWith('/auth')) return null
 
   const handleLogout = async () => {
@@ -25,11 +25,9 @@ export default function AppHeader() {
 
   const linkBase = [
     'inline-flex items-center rounded-md border px-3 py-1.5 text-sm font-medium',
-    // smoother interactions: color + transform + shadow
     'transition ease-out duration-200 motion-reduce:transition-none',
     'shadow-sm hover:shadow-lg',
     'hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] motion-reduce:transform-none',
-    // focus ring
     'focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-1',
   ].join(' ')
 
@@ -56,11 +54,11 @@ export default function AppHeader() {
             title="ホーム"
           >
             <span className="inline-block translate-y-[0.5px]">🏝️</span>
-            <span>Travel App</span>
+            <span>旅のしおり作成アプリ</span>
           </Link>
         </div>
 
-        {/* Mobile menu toggle */}
+        {/* モバイル画面のトグル */}
         <button
           type="button"
           className="inline-flex items-center justify-center rounded-md border px-3 py-1.5 text-sm sm:hidden"
@@ -119,7 +117,7 @@ export default function AppHeader() {
           )}
         </nav>
       </div>
-      {/* Mobile dropdown nav */}
+      {/* モバイル画面のナビゲーション */}
       {menuOpen && (
         <div id="mobile-nav" className="sm:hidden border-t bg-white/95 supports-backdrop-blur:backdrop-blur">
           <div className="mx-auto max-w-screen-lg px-4 py-2">
