@@ -136,12 +136,11 @@ https://boardmix.com/jp/
 - 行レベルセキュリティ（RLS）有効。メンバーのみ参照、編集は owner/editor のみ等をポリシーで制御。
 - テーブル定義は `lib/docs/table-definitions.md`、ER 図は `lib/docs/er-diagram.md` を参照。
 
-## 関連ドキュメント一覧（lib/docs）
+## 関連ドキュメント一覧
 補足説明・設計書を格納しています。
-- 開発ガイド: `lib/docs/dev.md`
-- テーブル定義: `lib/docs/table-definitions.md`
-- ER 図: `lib/docs/er-diagram.md`
-- 画面一覧: `lib/docs/screens.md`
-- API ルート一覧・説明: `lib/docs/api-routes.md`
-- その他の構成一覧: `lib/docs/structure-others.md`
+- テーブル定義：`lib/docs/table-definitions.md`
+- ER 図：`lib/docs/er-diagram.md`
+- 画面一覧：`lib/docs/screens.md`
+- API ルート一覧・説明：`lib/docs/api-routes.md`
+- その他の構成一覧：`lib/docs/structure-others.md`
 
