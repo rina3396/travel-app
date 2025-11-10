@@ -90,9 +90,9 @@ export default function TripSettingsPage({ params }: { params: Promise<{ tripId:
             </form>
           </Card>
 
-          <Card title="危険な操作" description="この旅行を完全に削除します。取り消せません。">
+          <Card title="旅のしおりを削除">
             <div className="flex items-center justify-between gap-3">
-              <div className="text-sm text-gray-700">この操作は取り消せません。</div>
+              <div className="text-sm text-gray-700">この旅のしおりが不要になった場合は削除できます。</div>
               <Button
                 variant="danger"
                 onClick={async () => {
@@ -107,7 +107,7 @@ export default function TripSettingsPage({ params }: { params: Promise<{ tripId:
                   }
                 }}
               >
-                この旅行を削除する
+                削除する
               </Button>
             </div>
           </Card>

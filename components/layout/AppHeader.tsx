@@ -94,7 +94,7 @@ export default function AppHeader() {
             href="/trips"
             aria-current={isActive('/trips') ? 'page' : undefined}
           >
-            旅の一覧
+            しおり一覧
           </Link>
           {pathname === '/' && (
             <Link
