@@ -1,8 +1,18 @@
 # 旅しおり作成アプリ
 
-旅行前後の予定や持ち物を整理し、メンバーと共有できるしおりアプリの MVP です。Next.js 15 / React 19 / Supabase を利用し、App Router ベースで構築しています。
-
 ## 使用技術
+<p>
+  <a href="https://nextjs.org/"><img alt="Next.js" src="https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white&style=flat-square"></a>
+  <a href="https://react.dev/"><img alt="React" src="https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB&style=flat-square"></a>
+  <a href="https://www.typescriptlang.org/"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white&style=flat-square"></a>
+  <a href="https://tailwindcss.com/"><img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white&style=flat-square"></a>
+  <a href="https://supabase.com/"><img alt="Supabase" src="https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white&style=flat-square"></a>
+  <a href="https://www.postgresql.org/"><img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white&style=flat-square"></a>
+  <a href="https://nodejs.org/"><img alt="Node.js" src="https://img.shields.io/badge/Node.js-339933?logo=node.js&logoColor=white&style=flat-square"></a>
+  <a href="https://eslint.org/"><img alt="ESLint" src="https://img.shields.io/badge/ESLint-4B32C3?logo=eslint&logoColor=white&style=flat-square"></a>
+  <a href="https://postcss.org/"><img alt="PostCSS" src="https://img.shields.io/badge/PostCSS-DD3A0A?logo=postcss&logoColor=white&style=flat-square"></a>
+  <a href="https://vercel.com/turbopack"><img alt="Turbopack" src="https://img.shields.io/badge/Turbopack-000000?logo=vercel&logoColor=white&style=flat-square"></a>
+</p>
 
 - Next.js 15（App Router） / React 19 / Turbopack
 - TypeScript
@@ -12,15 +22,27 @@
 - Node.js 18 以上
 
 ## プロジェクト概要
+旅行前の計画や準備、旅行中の予定確認に使用する「旅のしおり」を作成するアプリケーションです。<br><br>
+機能は、日程ごとの予定を一覧化しタイムスケジュールに沿って予定を作成する機能や、旅行前の予約や持ち物の準備などをリスト化し共有できる機能があります。<br>
+本アプリの目的としては、旅行の際に最低限必要な情報のみを可視化できることと、共有できること、旅のしおりの作成に手間がかからないこととしているため、使いやすさを重視して実装となっています。<br><br>
+技術的な面では、ログイン機能やユーザー登録機能を実装し、ログインできる登録されたユーザーごとに旅のしおりを作成することができます。<br>
+データベース（バックエンド部分）は Supabaseを利用し、行レベルセキュリティ（RLS）で、ユーザー登録やデータ管理を制御しています。
 
-旅行前の計画作成や旅行中の予定確認に使える「旅のしおり」を Web で作成・共有するためのアプリケーションです。日程ごとのアクティビティ管理、タスク（持ち物）管理、予算・費用の記録、共有リンクの発行などを提供します。現在は必要最小限の機能のみ実装しており、ドラッグ＆ドロップなど一部 UI は今後の拡張対象です。
 
 ## アプリ URL
-
 - https://travel-app-x46b.vercel.app/
 
-## 環境構築（ローカル開発）
+## テスト用アカウント
+- メールアドレス 
+  ```
+  test@example.com
+  ```
+- パスワード
+  ```
+  pw0rd1111
+  ```
 
+## 環境構築（ローカル開発）
 1. Node.js 18 系を用意します（Volta / nvm 推奨）。
 2. 依存パッケージをインストールします。
    ```bash
@@ -33,39 +55,20 @@
    SUPABASE_SERVICE_ROLE_KEY=... # メンバー追加など管理系 API を使う場合
    ```
 4. Supabase SQL Editor で `lib/supabase/sql/table_schema.sql` を実行し、テーブル定義と RLS を適用します。
-5. 続けて `lib/supabase/sql/dev_seed.sql` を実行し、テストデータを投入します（日本語のサンプル旅行が入ります）。
+5. 続けて `lib/supabase/sql/dev_seed.sql` を実行し、テストデータを投入します。
 6. 開発サーバーを起動します。
    ```bash
    npm run dev
    ```
-7. `http://localhost:3000` にアクセスし、下記テストユーザーでログインできます。
-   - メール: `test@example.com`
-   - パスワード: `pw0rd1111`
+7. `http://localhost:3000` にアクセスし、テストユーザーでログインできます。
 
 ## 変数
-
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- （必要に応じて）`SUPABASE_SERVICE_ROLE_KEY`、`SUPABASE_DB_URL` など
-
-## テスト用アカウント
-
-- メール: `test@example.com`
-- パスワード: `pw0rd1111`
-
-## 未実装機能
-
-- アクティビティ一覧のドラッグ＆ドロップによる並べ替え（UI / API とも未実装）
-- TODO / 持ち物リストの高度な管理（担当者割り当て・並べ替えなど）
-- 共有ページでのメンバー招待 API（デモ環境では常にエラーメッセージを返しています）
-- 予算・費用の自動精算／割り勘機能
-- ユーザープロフィールと `profiles` テーブルの同期（display_name 反映）
 
 ## 画面一覧
-
 | 画面名           | パス                                      | 説明                                         |
 | ---------------- | ---------------------------------------- | -------------------------------------------- |
-| LP               | `/`                                      | ランディング（ログイン済みなら `/trips` へ） |
 | ログイン         | `/auth/login`                            | メール・パスワードでログイン                 |
 | ユーザー登録     | `/auth/register`                         | 新規ユーザー登録フォーム                     |
 | ガイド           | `/guide`                                 | 使い方ガイド                                 |
@@ -111,17 +114,14 @@ app/
 ```
 
 ## 画面遷移図
-
 ![画面遷移図](lib/images/画面遷移図.png)
 
 （BoardMix で作成）https://boardmix.com/jp/
 
 ## API ルート
-
 詳細は `lib/docs/api-routes.md` を参照してください（エンドポイント一覧・レスポンス仕様を記載）。
 
 ## ディレクトリ構成
-
 - `app/` … Next.js App Router 配下の画面・API ルート
   - `app/api/` … API ルート（サーバーサイド）
   - `app/auth/` … 認証関連画面（ログイン／登録）
@@ -133,17 +133,21 @@ app/
 - ルート設定ファイル（`next.config.ts`, `tsconfig.json` など）
 
 ## データベース（Supabase）
-
 - スキーマ／RLS は `lib/supabase/sql/table_schema.sql` に定義
 - シードデータは `lib/supabase/sql/dev_seed.sql` に日本語サンプルを用意
 - RLS は `owner`/`editor` のみが更新できるようポリシーを設定済み
 
 ## 関連ドキュメント
-
 - テーブル定義 … `lib/docs/table-definitions.md`
->- ER 図 … `lib/docs/er-diagram.md`
+- ER 図 … `lib/docs/er-diagram.md`
 - 画面一覧/説明 … `lib/docs/screens.md`
 - API 一覧 … `lib/docs/api-routes.md`
 - その他構成 … `lib/docs/structure-others.md`
 
-開発を進める際は上記ドキュメントも参照してください。必要に応じて Pull Request で README を更新し、未実装機能のチェックや動作確認手順を追記していきます。
+## 未実装機能
+- アクティビティ一覧のドラッグ＆ドロップによる並べ替え（UI / API とも未実装）
+- TODO / 持ち物リストの高度な管理（担当者割り当て・並べ替えなど）
+- 共有ページでのメンバー招待 API（デモ環境では常にエラーメッセージを返しています）
+- 予算・費用の自動精算／割り勘機能
+- ユーザープロフィールと `profiles` テーブルの同期（display_name 反映）
+

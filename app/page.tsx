@@ -1,7 +1,7 @@
 // app/page.tsx — ルート(LP)ページ
 import { redirect } from "next/navigation"
 import { createServer } from "@/lib/supabase/server"
-import Landing from "@/components/marketing/Landing"
+// import Landing from "@/components/marketing/Landing"
 
 export default async function HomePage() {
   const { supabase } = await createServer()
@@ -11,6 +11,6 @@ export default async function HomePage() {
     redirect("/trips")
   }
 
-  return <Landing />
+  redirect("/auth/login")
+  // return <Landing />
 }
-
