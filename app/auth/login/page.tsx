@@ -1,6 +1,7 @@
 // app/auth/login/page.tsx — ログインページ
 "use client"
 
+import Link from "next/link"
 import { FormEvent, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClientBrowser } from "@/lib/supabase/client"
@@ -85,10 +86,15 @@ export default function LoginPage() {
           >
             {loading ? "ログイン中..." : "ログイン"}
           </button>
+          <Link
+            href="/auth/register"
+            className="w-full rounded border border-orange-500 py-2 text-center text-orange-700 transition hover:bg-orange-500 hover:text-white"
+          >
+            新規登録
+          </Link>
         </div>
       </form>
       {error && <p className="text-red-600">{error}</p>}
     </section>
   )
 }
-

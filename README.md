@@ -32,6 +32,19 @@
 ## アプリURL
 - https://travel-app-x46b.vercel.app/
 
+## 環境構築（ローカル開発）
+1. Node.js 18 系を用意します（Volta / nvm 推奨）。
+2. 依存パッケージをインストールします。
+   `ash
+   npm install
+   `
+3. .env.local に Supabase の URL / Anon Key などを設定します。
+4. Supabase SQL Editor で lib/supabase/sql/table_schema.sql → lib/supabase/sql/dev_seed.sql を順に実行します。
+5. 開発サーバーを起動します。
+   `ash
+   npm run dev
+   `
+6. http://localhost:3000 にアクセスし、	est@example.com / pw0rd1111 でログインできます。
 ## 環境変数
 - NEXT_PUBLIC_SUPABASE_URL
 - NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -47,6 +60,12 @@
   ```
 
 データは `lib/supabase/sql/dev_seed.sql` を使用しています。
+## 未実装機能
+- アクティビティのドラッグ＆ドロップによる並べ替え（UI/バックエンド双方で未実装）
+- TODO / 持ち物リストの高度な管理（担当者・並べ替え・カテゴリ分けなど）
+- 共有ページでのメンバー招待（デモ環境では追加APIが無効）
+- 予算・費用の自動精算ロジック（割り勘計算や立替精算）
+- ユーザープロフィールと Supabase profiles テーブルの自動同期
 
 ## 画面一覧
 | 画面名 | パス | 説明 |
@@ -143,4 +162,6 @@ https://boardmix.com/jp/
 - 画面一覧：`lib/docs/screens.md`
 - API ルート一覧・説明：`lib/docs/api-routes.md`
 - その他の構成一覧：`lib/docs/structure-others.md`
+
+
 

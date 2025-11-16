@@ -124,7 +124,7 @@ export default function TripTasksPage({ params }: { params: Promise<{ tripId: st
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                placeholder="例）海外用アダプターを買う"
+                placeholder="例）新幹線の座席を予約する"
                 className="w-full rounded-xl border px-3 py-2 text-sm"
               />
             </div>

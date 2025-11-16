@@ -70,6 +70,21 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
 
   const total = useMemo(() => items.reduce((sum, x) => sum + x.amount, 0), [items])
   const remaining = useMemo(() => budgetAmount - total, [budgetAmount, total])
+  const payerSummary = useMemo(() => {
+    const map = new Map<string, { name: string; total: number; count: number }>()
+    for (const expense of items) {
+      const name = expense.paidBy?.trim() || "支払者未入力"
+      const key = name.toLowerCase()
+      const entry = map.get(key)
+      if (entry) {
+        entry.total += expense.amount
+        entry.count += 1
+      } else {
+        map.set(key, { name, total: expense.amount, count: 1 })
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => b.total - a.total)
+  }, [items])
 
   async function addExpense(e: React.FormEvent) {
     e.preventDefault()
@@ -249,7 +264,7 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
               <input
                 value={paidBy}
                 onChange={(e) => setPaidBy(e.target.value)}
-                placeholder="お名前を入力してください"
+                placeholder="名前を入力してください"
                 className="w-full rounded-xl border px-3 py-2 text-sm"
               />
             </div>
@@ -259,6 +274,23 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
           </div>
         </form>
       </Card>
+
+            {payerSummary.length > 0 && (
+        <Card className="p-4 text-sm">
+          <div className="mb-3 text-xs font-semibold text-gray-600">支払者別の合計</div>
+          <ul className="divide-y">
+            {payerSummary.map((p) => (
+              <li key={p.name} className="flex items-center justify-between py-2">
+                <div>
+                  <div className="font-medium text-gray-900">{p.name}</div>
+                  <div className="text-xs text-gray-500">{p.count} 件の支払い</div>
+                </div>
+                <div className="text-right font-semibold">¥{formatWithComma(p.total)}</div>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
 
       {loading && (
         <Card>
@@ -304,7 +336,8 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
         </table>
       </Card>
 
-      <Card className="text-sm">
+      {/* 未実装箇所 */}
+      {/* <Card className="text-sm">
         <p>
           メンバー管理や権限設定は{" "}
           <Link className="underline" href={`/trips/${encodeURIComponent(tripId)}/share`}>
@@ -312,7 +345,7 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
           </Link>
           から行えます。
         </p>
-      </Card>
+      </Card> */}
     </section>
   )
 }
