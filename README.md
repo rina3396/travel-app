@@ -30,7 +30,7 @@
 
 
 ## アプリ URL
-- https://travel-app-x46b.vercel.app/
+- https://travel-app-oifk.vercel.app/auth/login
 
 ## テスト用アカウント
 - メールアドレス 
@@ -81,8 +81,8 @@
 | 持ち物・TODO     | `/trips/[tripId]/tasks`                  | タスク／持ち物の管理                         |
 | 予算・費用       | `/trips/[tripId]/budget`                 | 予算設定と支出登録                           |
 | 共有             | `/trips/[tripId]/share`                  | メンバー管理・共有リンク（招待は未実装）     |
-| 設定             | `/trips/[tripId]/settings`               | タイトル／期間／アーカイブ設定               |
-| プレビュー       | `/trips/[tripId]/preview`                | 印刷／共有用プレビュー                       |
+| 設定             | `/trips/[tripId]/settings`               | タイトル・期間編集/しおりの削除              |
+| プレビュー       | `/trips/[tripId]/preview`                | プレビュー                       |
 
 ##### 画面フォルダ構成
 
