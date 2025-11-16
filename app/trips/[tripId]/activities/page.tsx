@@ -155,26 +155,6 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
     }
   }
 
-  async function migrateUnassignedToTarget() {
-    if (!targetDate) return
-    try {
-      setLoading(true)
-      setError(null)
-      const res = await fetch(`/api/trips/${encodeURIComponent(tripId)}/activities/assign-day`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date: targetDate }),
-      })
-      if (!res.ok) throw new Error(await res.text())
-      const ref = await fetch(`/api/trips/${encodeURIComponent(tripId)}/activities`, { cache: "no-store" })
-      const data: unknown = await ref.json()
-      setItems(Array.isArray(data) ? (data as DbActivity[]).map(toActivity) : [])
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Failed to migrate items")
-    } finally {
-      setLoading(false)
-    }
-  }
 
   return (
     <section className="mx-auto w-full max-w-2xl space-y-6 p-4">
@@ -209,16 +189,7 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
           </Button>
         </div>
       )}
-
-      {targetDate && (
-        <div className="flex justify-end">
-          <Button variant="outline" size="sm" onClick={migrateUnassignedToTarget}>
-            未割り当てをこの日に移動
-          </Button>
-        </div>
-      )}
-
-      <Card title="アクティビティを追加" description="時間や場所は任意で新規アクティビティを作成します。">
+<Card title="アクティビティを追加" description="時間や場所は任意で新規アクティビティを作成します。">
         <form onSubmit={addActivity} className="grid gap-4">
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="space-y-1">
@@ -401,3 +372,4 @@ function addDays(isoDate: string, delta: number) {
   d.setUTCDate(d.getUTCDate() + delta)
   return d.toISOString().slice(0, 10)
 }
+
