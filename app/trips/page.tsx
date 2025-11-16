@@ -15,7 +15,7 @@ export default async function TripsIndexPage() {
   if (error) {
     return (
       <section className="mx-auto w-full max-w-2xl space-y-4 p-4">
-        <h1 className="text-2xl font-bold">旅行</h1>
+        <h1 className="text-2xl font-bold">しおり一覧</h1>
         <p className="text-sm text-red-600">{error.message}</p>
       </section>
     )
@@ -26,7 +26,7 @@ export default async function TripsIndexPage() {
   return (
     <section className="mx-auto w-full max-w-2xl space-y-6 p-4">
       <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">旅行</h1>
+        <h1 className="text-2xl font-bold">しおり一覧</h1>
       </header>
 
       <ul className="grid grid-cols-1 gap-3">
