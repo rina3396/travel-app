@@ -57,7 +57,7 @@ export default async function TripsIndexPage() {
                   </span>
                 </div>
               </Link>
-              <Button href={`/trips/${encodeURIComponent(t.id)}`} variant="outline" size="sm">詳細</Button>
+              <Button href={`/trips/${encodeURIComponent(t.id)}/settings`} variant="outline" size="sm">設定</Button>
             </div>
           </li>
         ))}
@@ -86,4 +86,3 @@ export default async function TripsIndexPage() {
     </section>
   )
 }
-

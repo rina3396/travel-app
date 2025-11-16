@@ -20,7 +20,6 @@ export default function TripNewPage() {
   const [participants, setParticipants] = useState<string[]>([])
   const [participantInput, setParticipantInput] = useState<string>("")
   const [budget, setBudget] = useState<string>("")
-  const [currency, setCurrency] = useState<string>("JPY")
   const [isPublic, setIsPublic] = useState<boolean>(false)
 
   // 状態
@@ -107,7 +106,7 @@ export default function TripNewPage() {
         startDate: startDate || null,
         endDate: endDate || null,
         participants: participants.length ? participants : undefined,
-        budget: budget ? { amount: Number(budget), currency } : undefined,
+        budget: budget ? { amount: Number(budget), currency: "JPY" } : undefined,
         share: isPublic ? { public: true } : undefined,
       }
 
@@ -218,15 +217,25 @@ export default function TripNewPage() {
           <div className="grid grid-cols-3 gap-3 p-3">
             <div className="col-span-2">
               <label className="text-xs text-gray-600">予算</label>
-              <input value={budget} onChange={(e) => setBudget(e.target.value)} type="number" min={0} className="w-full rounded-xl border px-3 py-2 text-sm" placeholder="予算を入力してください" />
+              <input
+                value={budget ? formatWithComma(Number(budget)) : ""}
+                onChange={(e) => {
+                  const cleaned = e.target.value.replace(/[^\d]/g, "")
+                  setBudget(cleaned)
+                }}
+                inputMode="numeric"
+                pattern="[0-9,]*"
+                className="w-full rounded-xl border px-3 py-2 text-sm"
+                placeholder="例: 150,000"
+              />
             </div>
             <div>
               <label className="text-xs text-gray-600">通貨</label>
-              <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="w-full rounded-xl border bg-white px-3 py-2 text-sm">
-                <option value="JPY">JPY</option>
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-              </select>
+              <input
+                value="JPY"
+                disabled
+                className="w-full rounded-xl border bg-gray-50 px-3 py-2 text-sm text-gray-600"
+              />
             </div>
           </div>
         </Card>
@@ -237,7 +246,12 @@ export default function TripNewPage() {
         <Card>
           <div className="flex items-center justify-between p-3">
             <div className="text-sm">公開リンクを有効にする（リンクを知っている人が閲覧可能）</div>
-            <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={isPublic}
+              onChange={(e) => setIsPublic(e.target.checked)}
+              className="h-5 w-5 accent-orange-500"
+            />
           </div>
         </Card>
       )}
@@ -249,7 +263,7 @@ export default function TripNewPage() {
             <div>タイトル: {title || '未設定'}</div>
             <div>期間: {(startDate || '未設定')} - {(endDate || '未設定')}</div>
             <div>参加者: {participants.length ? participants.join(', ') : 'なし'}</div>
-            <div>予算: {budget ? `${budget} ${currency}` : '未設定'}</div>
+            <div>予算: {budget ? `¥${formatWithComma(Number(budget))}` : '未設定'}</div>
             <div>公開: {isPublic ? '有効' : '無効'}</div>
           </div>
         </Card>
@@ -273,5 +287,11 @@ export default function TripNewPage() {
     </section>
   )
 }
+
+function formatWithComma(value: number) {
+  if (!Number.isFinite(value)) return ""
+  return Math.round(value).toLocaleString("en-US", { useGrouping: true })
+}
+
 
 

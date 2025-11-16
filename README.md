@@ -57,12 +57,12 @@
 |一覧| `/trips` | 作成した「旅行しおり」の一覧 |
 |新規作成| `/trips/new` | 「旅行しおり」新規作成ウィザード |
 |ダッシュボード| `/trips/[tripId]` | ダッシュボード（各機能画面へのハブ） |
-|アクティビティ一覧| `/trips/[tripId]/activities` | 行程の一覧・作成・編集・並べ替え |
+|アクティビティ一覧| `/trips/[tripId]/activities` | 行程の一覧・作成・編集、並べ替え（未実装） |
 |アクティビティ詳細| `/trips/[tripId]/activities/[activityId]` | 個別行程の詳細/編集 |
 |日別設定| `/trips/[tripId]/days` | 日付単位の計画管理 |
 |持ち物・TODO| `/trips/[tripId]/tasks` | タスク・持ち物の一覧・作成・更新・削除 |
 |予算・費用| `/trips/[tripId]/budget` | 予算と支出の表示・支出登録 |
-|共有| `/trips/[tripId]/share` | メンバー招待・権限設定・共有リンク管理 |
+|共有| `/trips/[tripId]/share` | メンバー招待（未実装）・権限設定（未実装）・共有リンク管理 |
 |設定| `/trips/[tripId]/settings` | タイトル・日付・アーカイブ等の設定 |
 |プレビュー| `/trips/[tripId]/preview` | 作成した「旅行しおり」のプレビュー |
 

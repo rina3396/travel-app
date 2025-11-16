@@ -175,6 +175,7 @@ alter table public.expenses     enable row level security;
 alter table public.tasks        enable row level security;
 alter table public.share_links  enable row level security;
 alter table public.budgets      enable row level security;
+alter table public.budgets      enable row level security;
 
 -- 6) Policies
 
@@ -268,5 +269,14 @@ create policy share_links_select on public.share_links
 
 drop policy if exists share_links_crud on public.share_links;
 create policy share_links_crud on public.share_links
+  for all to authenticated using (public.has_edit_permission(trip_id, auth.uid())) with check (public.has_edit_permission(trip_id, auth.uid()));
+
+-- budgets
+drop policy if exists budgets_select on public.budgets;
+create policy budgets_select on public.budgets
+  for select to authenticated using (public.is_trip_member(trip_id, auth.uid()));
+
+drop policy if exists budgets_crud on public.budgets;
+create policy budgets_crud on public.budgets
   for all to authenticated using (public.has_edit_permission(trip_id, auth.uid())) with check (public.has_edit_permission(trip_id, auth.uid()));
 

@@ -133,6 +133,133 @@ UNION ALL SELECT trip_id, '充電器・バッテリー準備','todo',   false, 3
 UNION ALL SELECT trip_id, 'ホテル予約の確認',  'todo',   false, 4 FROM lt
 UNION ALL SELECT trip_id, 'ICカードを購入',    'todo',   false, 5 FROM lt;
 
+-- 8) 追加サンプル: 秋の京都食べ歩き
+WITH u AS (
+  SELECT id AS owner_id FROM auth.users WHERE email='test@example.com'
+)
+INSERT INTO public.trips (owner_id, title, description, start_date, end_date, currency_code)
+SELECT
+  owner_id,
+  '秋の京都食べ歩き',
+  '錦市場や嵐山をめぐる2泊3日のグルメ旅',
+  DATE '2024-11-02',
+  DATE '2024-11-04',
+  'JPY'
+FROM u;
+
+-- 新規トリップの日付3日分
+WITH owner AS (
+  SELECT id AS owner_id FROM auth.users WHERE email='test@example.com'
+), lt AS (
+  SELECT id AS trip_id FROM public.trips
+  WHERE owner_id=(SELECT owner_id FROM owner)
+  ORDER BY created_at DESC LIMIT 1
+)
+INSERT INTO public.trip_days (trip_id, date)
+SELECT trip_id, DATE '2024-11-02' FROM lt;
+WITH owner AS (
+  SELECT id AS owner_id FROM auth.users WHERE email='test@example.com'
+), lt AS (
+  SELECT id AS trip_id FROM public.trips
+  WHERE owner_id=(SELECT owner_id FROM owner)
+  ORDER BY created_at DESC LIMIT 1
+)
+INSERT INTO public.trip_days (trip_id, date)
+SELECT trip_id, DATE '2024-11-03' FROM lt;
+WITH owner AS (
+  SELECT id AS owner_id FROM auth.users WHERE email='test@example.com'
+), lt AS (
+  SELECT id AS trip_id FROM public.trips
+  WHERE owner_id=(SELECT owner_id FROM owner)
+  ORDER BY created_at DESC LIMIT 1
+)
+INSERT INTO public.trip_days (trip_id, date)
+SELECT trip_id, DATE '2024-11-04' FROM lt;
+
+-- 新規トリップの予算
+WITH owner AS (
+  SELECT id AS owner_id FROM auth.users WHERE email='test@example.com'
+), lt AS (
+  SELECT id AS trip_id FROM public.trips
+  WHERE owner_id=(SELECT owner_id FROM owner)
+  ORDER BY created_at DESC LIMIT 1
+)
+INSERT INTO public.budgets (trip_id, amount, currency)
+SELECT trip_id, 120000, 'JPY' FROM lt
+ON CONFLICT (trip_id) DO UPDATE
+  SET amount = EXCLUDED.amount,
+      currency = EXCLUDED.currency;
+
+-- 新規アクティビティ
+WITH owner AS (
+  SELECT id AS owner_id FROM auth.users WHERE email='test@example.com'
+), lt AS (
+  SELECT id AS trip_id FROM public.trips
+  WHERE owner_id=(SELECT owner_id FROM owner)
+  ORDER BY created_at DESC LIMIT 1
+), day_map AS (
+  SELECT td.id AS day_id, td.date, td.trip_id
+  FROM public.trip_days td
+  WHERE td.trip_id=(SELECT trip_id FROM lt)
+), tmpl AS (
+  VALUES
+    (DATE '2024-11-02', 1, '錦市場で朝ごはん',    '08:30', NULL,    '錦市場',       'だし巻き玉子食べ比べ'),
+    (DATE '2024-11-02', 2, '祇園散策と八坂神社', '11:00', '12:30', '祇園〜八坂神社', '町家カフェで休憩'),
+    (DATE '2024-11-03', 1, '嵐山サイクリング',  '09:00', '11:30', '嵐山エリア',   '渡月橋から竹林へ'),
+    (DATE '2024-11-03', 2, '湯豆腐ランチ',      '12:30', NULL,    '嵐山の精進料理', '湯豆腐コース'),
+    (DATE '2024-11-04', 1, '京都駅でお土産探し','10:00', NULL,    '京都駅地下街', '生八ツ橋＆抹茶スイーツ'),
+    (DATE '2024-11-04', 2, 'ラーメン小路ランチ','12:30', NULL,    '京都拉麺小路', 'ご当地ラーメン食べ比べ')
+)
+INSERT INTO public.activities (trip_id, title, start_time, end_time, location, note, day_id, order_no)
+SELECT
+  (SELECT trip_id FROM lt),
+  tmpl.column3,
+  tmpl.column4,
+  tmpl.column5,
+  tmpl.column6,
+  tmpl.column7,
+  day_map.day_id,
+  tmpl.column2
+FROM tmpl
+JOIN day_map ON day_map.date = tmpl.column1;
+
+-- 新規支出
+WITH owner AS (
+  SELECT id AS owner_id FROM auth.users WHERE email='test@example.com'
+), lt AS (
+  SELECT id AS trip_id FROM public.trips
+  WHERE owner_id=(SELECT owner_id FROM owner)
+  ORDER BY created_at DESC LIMIT 1
+), d AS (
+  SELECT td.trip_id, td.date FROM public.trip_days td WHERE td.trip_id=(SELECT trip_id FROM lt)
+), u AS (
+  SELECT id AS user_id FROM auth.users WHERE email='test@example.com'
+)
+INSERT INTO public.expenses (trip_id, date, title, category, amount, paid_by, paid_by_name, split_with)
+SELECT d.trip_id, d.date, e.title, e.category, e.amount, (SELECT user_id FROM u), NULL, ARRAY[(SELECT user_id FROM u)]
+FROM d
+JOIN (
+  VALUES
+    (DATE '2024-11-02','錦市場の朝ごはん', 'meal',   1800),
+    (DATE '2024-11-02','祇園カフェ',       'meal',    900),
+    (DATE '2024-11-03','トロッコ列車チケット','ticket', 2500),
+    (DATE '2024-11-04','お土産まとめ買い', 'other',  4200)
+) AS e(date_key, title, category, amount)
+  ON d.date = e.date_key;
+
+-- 新規タスク
+WITH owner AS (
+  SELECT id AS owner_id FROM auth.users WHERE email='test@example.com'
+), lt AS (
+  SELECT id AS trip_id FROM public.trips
+  WHERE owner_id=(SELECT owner_id FROM owner)
+  ORDER BY created_at DESC LIMIT 1
+)
+INSERT INTO public.tasks (trip_id, title, kind, done, sort_order)
+SELECT trip_id, '着物レンタルを予約', 'todo',    false, 1 FROM lt
+UNION ALL SELECT trip_id, 'モバイルバッテリー満充電', 'todo', false, 2 FROM lt
+UNION ALL SELECT trip_id, '常備薬をポーチへ入れる',  'packing', false, 3 FROM lt;
+
 COMMIT;
 
 -- 実行メモ:

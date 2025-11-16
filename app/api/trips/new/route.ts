@@ -105,4 +105,3 @@ export async function POST(req: NextRequest) {
   applyPendingCookies?.(res)
   return res
 }
-
