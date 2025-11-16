@@ -98,6 +98,7 @@
   - `category text`
   - `amount numeric` — NOT NULL
   - `paid_by uuid` — FK: `auth.users(id)`（ON DELETE SET NULL）
+  - `paid_by_name text`
   - `split_with uuid[]` — NOT NULL, DEFAULT `{}`
   - `created_at timestamptz` — NOT NULL, DEFAULT now()
   - `updated_at timestamptz` — NOT NULL, DEFAULT now()
@@ -154,4 +155,3 @@
 ## 補足
 - `updated_at` は各テーブルの BEFORE UPDATE トリガーで自動更新。
 - 参考SQL: `lib/supabase/sql/table_schema.sql`
-

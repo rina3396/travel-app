@@ -107,8 +107,8 @@ WITH owner AS (
 ), u AS (
   SELECT id AS user_id FROM auth.users WHERE email='test@example.com'
 )
-INSERT INTO public.expenses (trip_id, date, title, category, amount, paid_by, split_with)
-SELECT d.trip_id, d.date, e.title, e.category, e.amount, (SELECT user_id FROM u), ARRAY[(SELECT user_id FROM u)]
+INSERT INTO public.expenses (trip_id, date, title, category, amount, paid_by, paid_by_name, split_with)
+SELECT d.trip_id, d.date, e.title, e.category, e.amount, (SELECT user_id FROM u), NULL, ARRAY[(SELECT user_id FROM u)]
 FROM d
 CROSS JOIN (
   VALUES

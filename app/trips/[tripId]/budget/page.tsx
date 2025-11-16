@@ -47,12 +47,13 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
     e.preventDefault()
     const amt = Number(amount)
     if (!title.trim() || !Number.isFinite(amt) || amt <= 0) return
+    const payer = paidBy.trim()
     const body = {
       date: new Date().toISOString().slice(0, 10),
       title: title.trim(),
       category,
       amount: Math.round(amt * 100) / 100,
-      paidBy: paidBy || "me",
+      paidBy: payer,
       splitWith: [],
     }
     try {
@@ -69,6 +70,7 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
       setTitle("")
       setAmount("")
       setCategory("meal")
+      setPaidBy("")
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "追加に失敗しました")
     } finally {
@@ -115,7 +117,7 @@ export default function BudgetPage({ params }: { params: Promise<{ tripId: strin
             </div>
             <div className="space-y-1">
               <label className="text-xs text-gray-600">支払者</label>
-              <input value={paidBy} onChange={(e) => setPaidBy(e.target.value)} placeholder="山田太郎 など" className="w-full rounded-xl border px-3 py-2 text-sm" />
+              <input value={paidBy} onChange={(e) => setPaidBy(e.target.value)} placeholder="名前を入力してください" className="w-full rounded-xl border px-3 py-2 text-sm" />
             </div>
           </div>
           <div className="flex justify-end">
@@ -183,7 +185,8 @@ function toExpense(r: DbExpense): Expense {
     title: r.title,
     category: (r.category ?? undefined) as Expense["category"] | undefined,
     amount: r.amount,
-    paidBy: r.paid_by ?? "",
+    paidBy: r.paid_by_name ?? r.paid_by ?? "",
+    paidByMemberId: r.paid_by ?? null,
     splitWith: r.split_with ?? [],
   }
 }

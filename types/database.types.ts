@@ -23,9 +23,9 @@ export type Database = {
         Relationships: []
       }
       expenses: {
-        Row: { id: string; trip_id: string | null; date: string | null; title: string; category: string | null; amount: number; paid_by: string | null; split_with: string[] | null; created_at?: string | null }
-        Insert: { id?: string; trip_id?: string | null; date?: string | null; title: string; category?: string | null; amount: number; paid_by?: string | null; split_with?: string[] | null }
-        Update: { id?: string; trip_id?: string | null; date?: string | null; title?: string; category?: string | null; amount?: number; paid_by?: string | null; split_with?: string[] | null }
+        Row: { id: string; trip_id: string | null; date: string | null; title: string; category: string | null; amount: number; paid_by: string | null; paid_by_name: string | null; split_with: string[] | null; created_at?: string | null }
+        Insert: { id?: string; trip_id?: string | null; date?: string | null; title: string; category?: string | null; amount: number; paid_by?: string | null; paid_by_name?: string | null; split_with?: string[] | null }
+        Update: { id?: string; trip_id?: string | null; date?: string | null; title?: string; category?: string | null; amount?: number; paid_by?: string | null; paid_by_name?: string | null; split_with?: string[] | null }
         Relationships: []
       }
       trip_members: {

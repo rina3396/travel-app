@@ -61,6 +61,7 @@ erDiagram
     TEXT category
     NUMERIC amount
     UUID paid_by FK
+    TEXT paid_by_name
     UUID[] split_with
     TIMESTAMPTZ created_at
     TIMESTAMPTZ updated_at
@@ -113,4 +114,3 @@ erDiagram
 - `TRIP_MEMBERS` は (trip_id, user_id) の複合主キー。
 - `ACTIVITIES.day_id` は NULL を許容（特定日未紐付けアクティビティを表現可能）。
 - `EXPENSES.split_with` は配列（分割対象ユーザーID）。
-

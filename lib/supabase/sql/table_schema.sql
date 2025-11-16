@@ -99,6 +99,7 @@ create table if not exists public.expenses (
   category text,
   amount numeric not null,
   paid_by uuid references auth.users(id) on delete set null,
+  paid_by_name text,
   split_with uuid[] not null default '{}'::uuid[],
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()

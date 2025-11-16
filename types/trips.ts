@@ -43,6 +43,7 @@ export type Expense = {
     category?: "meal" | "transport" | "lodging" | "ticket" | "other"
     amount: number
     paidBy: string
+    paidByMemberId?: string | null
     splitWith: string[]
 }
 
@@ -209,6 +210,7 @@ export type DbExpense = {
   category: string | null
   amount: number
   paid_by: UUID | null
+  paid_by_name?: string | null
   split_with?: string[] | null
 }
 
