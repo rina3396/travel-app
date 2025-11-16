@@ -265,7 +265,7 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
           </div>
           <div className="h-px bg-gray-100" />
           <div className="flex justify-end">
-            <Button type="submit" disabled={!canSubmit} className="gap-1.5">
+            <Button type="submit" variant="primary" disabled={!canSubmit} className="gap-1.5">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -277,7 +277,7 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
               </svg>
-              追加
+              アクティビティを追加
             </Button>
           </div>
         </form>
@@ -339,11 +339,11 @@ export default function ActivitiesPage({ params }: { params: Promise<{ tripId: s
                 </div>
               </div>
               <Button
+                type="button"
                 onClick={() => removeActivity(a.id)}
                 variant="danger"
-                size="sm"
                 aria-label={`「${a.title}」を削除`}
-                className="gap-0.5 px-1.5 py-0.5 text-[11px] leading-tight"
+                className="gap-1"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

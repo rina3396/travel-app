@@ -12,8 +12,9 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) { // ルートレイアウトコンポーネント
+  // 言語を日本語に設定・水和時警告を抑制
   return ( // コンポーネントの描画内容
-    <html lang="ja" suppressHydrationWarning> {/* 言語を日本語に設定・水和時警告を抑制 */}
+    <html lang="ja" suppressHydrationWarning>
       <body className="min-h-dvh bg-background text-foreground antialiased"> {/* 最小高さとテーマの適用 */}
         <AppHeader /> {/* アプリ共通のヘッダー */}
 
