@@ -30,7 +30,7 @@
 
 
 ## アプリ URL
-- https://travel-app-oifk.vercel.app/auth/login
+- https://travel-app-oifk.vercel.app
 
 ## テスト用アカウント
 - メールアドレス 
